@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MAIC Flask Optimized - Main Application Entry Point
+Like-Opt - Main Application Entry Point
 
 이 파일은 Flask 애플리케이션의 진입점입니다.
 개발 및 프로덕션 환경에서 실행할 수 있습니다.
@@ -29,13 +29,11 @@ def main():
     
     # 설정 정보 출력
     config = Config()
-    print(f"""
-🚀 MAIC Flask Optimized 시작 중...
-📍 환경: {os.environ.get('FLASK_ENV', 'development')}
-🔧 디버그: {os.environ.get('FLASK_DEBUG', 'False')}
-🌐 포트: {config.PORT}
-📁 프로젝트 루트: {project_root}
-    """)
+    print("Like-Opt starting...")
+    print(f"Environment: {os.environ.get('FLASK_ENV', 'development')}")
+    print(f"Debug: {os.environ.get('FLASK_DEBUG', 'False')}")
+    print(f"Port: {config.PORT}")
+    print(f"Project root: {project_root}")
     
     try:
         # 개발 서버 실행
@@ -46,9 +44,9 @@ def main():
             threaded=True
         )
     except KeyboardInterrupt:
-        print("\n👋 애플리케이션을 종료합니다...")
+        print("\nShutting down application...")
     except Exception as e:
-        print(f"❌ 오류 발생: {e}")
+        print(f"Error occurred: {e}")
         sys.exit(1)
 
 if __name__ == '__main__':

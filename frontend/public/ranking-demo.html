@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAIC Flask Optimized - Ranking Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c, #5a5d7c);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        .demo-section {
+            margin-bottom: 2rem;
+        }
+        
+        .demo-card {
+            background: rgba(58, 61, 92, 0.8);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.1);
+        }
+        
+        .demo-card h3 {
+            margin-top: 0;
+            color: #e0e0e0;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 8px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3), -4px -4px 8px rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4), -4px -4px 8px rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.2), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        /* Rank Chip Styles */
+        .rank-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(58, 61, 92, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 9999px;
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.3), 
+                -4px -4px 8px rgba(255, 255, 255, 0.1),
+                inset 1px 1px 2px rgba(255, 255, 255, 0.05),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .rank-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.4), 
+                -4px -4px 8px rgba(255, 255, 255, 0.15),
+                inset 1px 1px 2px rgba(255, 255, 255, 0.1),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.15);
+        }
+        
+        .rank-chip:active {
+            transform: translateY(0);
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.2), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .rank-chip-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                4px 4px 8px rgba(0, 0, 0, 0.3), 
+                -4px -4px 8px rgba(255, 255, 255, 0.1);
+        }
+        
+        .rank-icon {
+            font-size: 1.2rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+            z-index: 2;
+            position: relative;
+        }
+        
+        .rank-chip-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.125rem;
+        }
+        
+        .rank-name {
+            font-weight: 600;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .rank-level {
+            font-size: 0.75rem;
+            color: #e0e0e0;
+            opacity: 0.8;
+        }
+        
+        .rank-chip-progress {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            min-width: 60px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #ec4899);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progressShine 2s infinite;
+        }
+        
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-text {
+            font-size: 0.625rem;
+            color: #e0e0e0;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+        
+        .rank-chip-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .rank-chip:hover .rank-chip-glow {
+            opacity: 0.1;
+        }
+        
+        /* Rank-specific Styles */
+        .rank-chip[data-rank="bronze"] .rank-chip-icon {
+            background: linear-gradient(135deg, #CD7F32, #B8860B);
+        }
+        
+        .rank-chip[data-rank="silver"] .rank-chip-icon {
+            background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+        }
+        
+        .rank-chip[data-rank="gold"] .rank-chip-icon {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+        }
+        
+        .rank-chip[data-rank="emerald"] .rank-chip-icon {
+            background: linear-gradient(135deg, #50C878, #32CD32);
+        }
+        
+        .rank-chip[data-rank="diamond"] .rank-chip-icon {
+            background: linear-gradient(135deg, #00BFFF, #1E90FF);
+        }
+        
+        .rank-chip[data-rank="master"] .rank-chip-icon {
+            background: linear-gradient(135deg, #9370DB, #8A2BE2);
+        }
+        
+        .rank-chip[data-rank="challenger"] .rank-chip-icon {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
+            animation: challengerGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes challengerGlow {
+            0% {
+                box-shadow: 
+                    4px 4px 8px rgba(0, 0, 0, 0.3), 
+                    -4px -4px 8px rgba(255, 255, 255, 0.1),
+                    0 0 20px rgba(255, 107, 107, 0.5);
+            }
+            100% {
+                box-shadow: 
+                    4px 4px 8px rgba(0, 0, 0, 0.3), 
+                    -4px -4px 8px rgba(255, 255, 255, 0.1),
+                    0 0 30px rgba(78, 205, 196, 0.7);
+            }
+        }
+        
+        .rank-chip-upgrade {
+            animation: upgradeAnimation 2s ease-out;
+        }
+        
+        @keyframes upgradeAnimation {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 215, 0, 1); }
+            75% { transform: scale(1.02); box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+            100% { transform: scale(1); }
+        }
+        
+        .rank-chip-collection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        
+        .size-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        
+        .rank-chip-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .rank-chip-small .rank-chip-icon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .rank-chip-small .rank-icon {
+            font-size: 1rem;
+        }
+        
+        .rank-chip-large {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        
+        .rank-chip-large .rank-chip-icon {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .rank-chip-large .rank-icon {
+            font-size: 1.5rem;
+        }
+        
+        .log-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .log-time {
+            color: #888;
+            margin-right: 0.5rem;
+        }
+        
+        .log-rank {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .log-rank.sprout { color: #90EE90; }
+        .log-rank.leaf { color: #32CD32; }
+        .log-rank.tree { color: #8B4513; }
+        .log-rank.butterfly { color: #FF69B4; }
+        .log-rank.eagle { color: #4169E1; }
+        .log-rank.star { color: #FFD700; }
+        .log-rank.rocket { color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">MAIC Flask Optimized</h1>
+        <p class="subtitle">재사용 가능한 등급 칩 시스템 데모</p>
+        
+        <div class="demo-section">
+            <div class="demo-card">
+                <h3>🏆 모든 등급 칩</h3>
+                <p>7단계 등급 시스템: 🌱 새싹 → 🌿 잎사귀 → 🌳 나무 → 🦋 나비 → 🦅 독수리 → ⭐ 별 → 🚀 로켓</p>
+                
+                <div class="rank-chip-collection" id="all-ranks">
+                    <!-- 모든 등급 칩들이 여기에 추가됩니다 -->
+                </div>
+            </div>
+            
+            <div class="demo-card">
+                <h3>📏 크기별 등급 칩</h3>
+                <p>다양한 크기의 등급 칩을 확인해보세요.</p>
+                
+                <div class="size-demo">
+                    <div class="rank-chip rank-chip-small" data-rank="tree">
+                        <div class="rank-chip-icon">
+                            <span class="rank-icon">🌳</span>
+                        </div>
+                        <div class="rank-chip-text">
+                            <span class="rank-name">나무</span>
+                            <span class="rank-level">Lv.3</span>
+                        </div>
+                        <div class="rank-chip-glow"></div>
+                    </div>
+                    
+                    <div class="rank-chip" data-rank="eagle">
+                        <div class="rank-chip-icon">
+                            <span class="rank-icon">🦅</span>
+                        </div>
+                        <div class="rank-chip-text">
+                            <span class="rank-name">독수리</span>
+                            <span class="rank-level">Lv.5</span>
+                        </div>
+                        <div class="rank-chip-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%"></div>
+                            </div>
+                            <span class="progress-text">75%</span>
+                        </div>
+                        <div class="rank-chip-glow"></div>
+                    </div>
+                    
+                    <div class="rank-chip rank-chip-large" data-rank="rocket">
+                        <div class="rank-chip-icon">
+                            <span class="rank-icon">🚀</span>
+                        </div>
+                        <div class="rank-chip-text">
+                            <span class="rank-name">로켓</span>
+                            <span class="rank-level">Lv.7</span>
+                        </div>
+                        <div class="rank-chip-glow"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-card">
+                <h3>🎮 등급 테스트</h3>
+                <p>다양한 등급으로 변경하고 업그레이드 애니메이션을 확인해보세요.</p>
+                
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <div id="test-rank-chip"></div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn" onclick="setTestRank('sprout')">🌱 새싹</button>
+                    <button class="btn" onclick="setTestRank('leaf')">🌿 잎사귀</button>
+                    <button class="btn" onclick="setTestRank('tree')">🌳 나무</button>
+                    <button class="btn" onclick="setTestRank('butterfly')">🦋 나비</button>
+                    <button class="btn" onclick="setTestRank('eagle')">🦅 독수리</button>
+                    <button class="btn" onclick="setTestRank('star')">⭐ 별</button>
+                    <button class="btn" onclick="setTestRank('rocket')">🚀 로켓</button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 1rem;">
+                    <button class="btn btn-success" onclick="upgradeTestRank()">업그레이드</button>
+                    <button class="btn btn-warning" onclick="setTestProgress(Math.random() * 100)">진행률 랜덤</button>
+                    <button class="btn btn-secondary" onclick="clearLog()">로그 초기화</button>
+                </div>
+            </div>
+            
+            <div class="demo-card">
+                <h3>📊 등급 변경 로그</h3>
+                <div class="log-area" id="log-area">
+                    <div class="log-entry">
+                        <span class="log-time">시작</span>
+                        <span class="log-rank sprout">SPROUT</span>
+                        <span>등급 시스템이 초기화되었습니다.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class SimpleRankDemo {
+            constructor() {
+                this.rankLevels = {
+                    sprout: { level: 1, icon: '🌱', name: '새싹', color: '#90EE90', description: '처음 시작하는 단계' },
+                    leaf: { level: 2, icon: '🌿', name: '잎사귀', color: '#32CD32', description: '조금씩 자라는 단계' },
+                    tree: { level: 3, icon: '🌳', name: '나무', color: '#8B4513', description: '잘 자란 단계' },
+                    butterfly: { level: 4, icon: '🦋', name: '나비', color: 'linear-gradient(45deg, #FF69B4, #FF1493, #FF6347)', description: '변화하는 단계' },
+                    eagle: { level: 5, icon: '🦅', name: '독수리', color: '#4169E1', description: '높이 날아오르는 단계' },
+                    star: { level: 6, icon: '⭐', name: '별', color: '#FFD700', description: '빛나는 단계' },
+                    rocket: { level: 7, icon: '🚀', name: '로켓', color: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)', description: '최고 높이로 날아가는 단계' }
+                };
+                
+                this.currentRank = 'sprout';
+                this.progress = 0;
+                this.init();
+            }
+            
+            init() {
+                this.renderAllRanks();
+                this.renderTestRank();
+                this.setupEventListeners();
+                this.logRank('sprout', '등급 시스템이 초기화되었습니다.');
+            }
+            
+            renderAllRanks() {
+                const container = document.getElementById('all-ranks');
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                Object.keys(this.rankLevels).forEach(rank => {
+                    const rankInfo = this.rankLevels[rank];
+                    const chip = this.createRankChip(rank, rankInfo, true);
+                    container.appendChild(chip);
+                });
+            }
+            
+            renderTestRank() {
+                const container = document.getElementById('test-rank-chip');
+                if (!container) return;
+                
+                const rankInfo = this.rankLevels[this.currentRank];
+                const chip = this.createRankChip(this.currentRank, rankInfo, true, true);
+                chip.id = 'test-chip';
+                container.appendChild(chip);
+            }
+            
+            createRankChip(rank, rankInfo, showText = false, showProgress = false) {
+                const chip = document.createElement('div');
+                chip.className = 'rank-chip';
+                chip.setAttribute('data-rank', rank);
+                chip.setAttribute('data-level', rankInfo.level);
+                
+                const progress = showProgress ? this.progress : 0;
+                
+                chip.innerHTML = `
+                    <div class="rank-chip-icon">
+                        <span class="rank-icon">${rankInfo.icon}</span>
+                    </div>
+                    ${showText ? `
+                        <div class="rank-chip-text">
+                            <span class="rank-name">${rankInfo.name}</span>
+                            <span class="rank-level">Lv.${rankInfo.level}</span>
+                        </div>
+                    ` : ''}
+                    ${showProgress ? `
+                        <div class="rank-chip-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                            <span class="progress-text">${Math.round(progress)}%</span>
+                        </div>
+                    ` : ''}
+                    <div class="rank-chip-glow"></div>
+                `;
+                
+                // 클릭 이벤트
+                chip.addEventListener('click', () => {
+                    this.handleRankClick(rank, rankInfo);
+                });
+                
+                return chip;
+            }
+            
+            setupEventListeners() {
+                // 등급 변경 이벤트 리스너
+                document.addEventListener('rankChange', (event) => {
+                    const { rank, level, name, progress } = event.detail;
+                    this.logRank(rank, `등급이 ${name} (Lv.${level})로 변경되었습니다. (진행률: ${Math.round(progress)}%)`);
+                });
+            }
+            
+            handleRankClick(rank, rankInfo) {
+                console.group('🏆 등급 정보');
+                console.log('등급:', rankInfo.name);
+                console.log('레벨:', rankInfo.level);
+                console.log('아이콘:', rankInfo.icon);
+                console.log('색상:', rankInfo.color);
+                console.groupEnd();
+                
+                this.logRank(rank, `${rankInfo.name} 등급을 클릭했습니다.`);
+            }
+            
+            setTestRank(rank) {
+                if (!this.rankLevels[rank]) return;
+                
+                const previousRank = this.currentRank;
+                this.currentRank = rank;
+                this.progress = 0;
+                
+                this.renderTestRank();
+                this.logRank(rank, `${this.rankLevels[previousRank].name}에서 ${this.rankLevels[rank].name}로 변경되었습니다.`);
+                
+                // 등급 변경 이벤트 발생
+                this.emitRankChange(rank, 0);
+            }
+            
+            upgradeTestRank() {
+                const currentLevel = this.rankLevels[this.currentRank].level;
+                const nextRank = Object.keys(this.rankLevels).find(
+                    rank => this.rankLevels[rank].level === currentLevel + 1
+                );
+                
+                if (nextRank) {
+                    this.setTestRank(nextRank);
+                    this.showUpgradeAnimation();
+                } else {
+                    this.logRank(this.currentRank, '이미 최고 등급입니다!');
+                }
+            }
+            
+            showUpgradeAnimation() {
+                const chip = document.getElementById('test-chip');
+                if (chip) {
+                    chip.classList.add('rank-chip-upgrade');
+                    setTimeout(() => {
+                        chip.classList.remove('rank-chip-upgrade');
+                    }, 2000);
+                }
+            }
+            
+            setTestProgress(progress) {
+                this.progress = Math.max(0, Math.min(100, progress));
+                
+                const chip = document.getElementById('test-chip');
+                if (chip) {
+                    const progressFill = chip.querySelector('.progress-fill');
+                    const progressText = chip.querySelector('.progress-text');
+                    
+                    if (progressFill) {
+                        progressFill.style.width = `${this.progress}%`;
+                    }
+                    
+                    if (progressText) {
+                        progressText.textContent = `${Math.round(this.progress)}%`;
+                    }
+                }
+                
+                this.logRank(this.currentRank, `진행률이 ${Math.round(this.progress)}%로 변경되었습니다.`);
+            }
+            
+            logRank(rank, message) {
+                const logArea = document.getElementById('log-area');
+                if (!logArea) return;
+                
+                const timestamp = new Date().toLocaleTimeString('ko-KR');
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `
+                    <span class="log-time">${timestamp}</span>
+                    <span class="log-rank ${rank}">${rank.toUpperCase()}</span>
+                    <span>${message}</span>
+                `;
+                
+                logArea.appendChild(logEntry);
+                logArea.scrollTop = logArea.scrollHeight;
+            }
+            
+            emitRankChange(rank, progress) {
+                const event = new CustomEvent('rankChange', {
+                    detail: {
+                        rank,
+                        level: this.rankLevels[rank].level,
+                        name: this.rankLevels[rank].name,
+                        progress,
+                        timestamp: new Date()
+                    }
+                });
+                
+                document.dispatchEvent(event);
+            }
+            
+            clearLog() {
+                const logArea = document.getElementById('log-area');
+                if (logArea) {
+                    logArea.innerHTML = '';
+                }
+                this.logRank('sprout', '로그가 초기화되었습니다.');
+            }
+        }
+        
+        // 등급 데모 시작
+        const rankDemo = new SimpleRankDemo();
+        
+        // 전역 함수들
+        function setTestRank(rank) {
+            rankDemo.setTestRank(rank);
+        }
+        
+        function upgradeTestRank() {
+            rankDemo.upgradeTestRank();
+        }
+        
+        function setTestProgress(progress) {
+            rankDemo.setTestProgress(progress);
+        }
+        
+        function clearLog() {
+            rankDemo.clearLog();
+        }
+        
+        console.log('🚀 MAIC Flask Optimized 등급 칩 시스템 데모 시작!');
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+/* Toggle Switch Styles */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-sm) 0;
+  padding: var(--spacing-xs);
+}
+
+.toggle-label {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  color: var(--color-text-light);
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-surface-dark);
+  border-radius: 34px;
+  box-shadow: var(--neumorphic-shadow-inset-dark-1), var(--neumorphic-shadow-inset-dark-2);
+  transition: all var(--transition-speed) var(--transition-easing);
+  cursor: pointer;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background: var(--color-text-light);
+  border-radius: 50%;
+  box-shadow: var(--neumorphic-shadow-dark-1), var(--neumorphic-shadow-dark-2);
+  transition: all var(--transition-speed) var(--transition-easing);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--color-primary);
+  box-shadow: 
+    var(--neumorphic-shadow-inset-dark-1), 
+    var(--neumorphic-shadow-inset-dark-2),
+    0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+  background: white;
+}
+
+.toggle-switch input:disabled + .toggle-slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggle-switch:hover input:not(:disabled) + .toggle-slider {
+  box-shadow: 
+    var(--neumorphic-shadow-inset-dark-1), 
+    var(--neumorphic-shadow-inset-dark-2),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.05),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-switch input:checked:hover input:not(:disabled) + .toggle-slider {
+  box-shadow: 
+    var(--neumorphic-shadow-inset-dark-1), 
+    var(--neumorphic-shadow-inset-dark-2),
+    0 0 0 2px rgba(99, 102, 241, 0.4);
+}
+
+/* Toggle Sizes */
+.toggle-switch-sm {
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch-sm .toggle-slider:before {
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+}
+
+.toggle-switch-sm input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+.toggle-switch-lg {
+  width: 76px;
+  height: 42px;
+}
+
+.toggle-switch-lg .toggle-slider:before {
+  height: 34px;
+  width: 34px;
+  left: 4px;
+  bottom: 4px;
+}
+
+.toggle-switch-lg input:checked + .toggle-slider:before {
+  transform: translateX(34px);
+}

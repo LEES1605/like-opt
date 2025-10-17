@@ -1,5 +1,5 @@
 """
-MAIC Flask Optimized - Configuration Settings
+Like-Opt - Configuration Settings
 
 환경별 설정을 관리하는 모듈입니다.
 개발, 테스트, 프로덕션 환경에 따른 설정을 제공합니다.
@@ -15,12 +15,12 @@ class Config:
     PROJECT_ROOT = Path(__file__).parent.parent.parent
     
     # Flask 기본 설정
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'maic-flask-opt-secret-key-2024'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'like-opt-secret-key-2024'
     DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     
     # 서버 설정
     HOST = os.environ.get('HOST', '127.0.0.1')
-    PORT = int(os.environ.get('PORT', 5000))
+    PORT = int(os.environ.get('PORT', 5001))
     
     # 세션 설정
     SESSION_TYPE = 'filesystem'
@@ -43,7 +43,7 @@ class Config:
     
     # 데이터베이스 설정
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        f'sqlite:///{PROJECT_ROOT / "maic.db"}'
+        f'sqlite:///{PROJECT_ROOT / "like.db"}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # AI 설정
@@ -51,12 +51,12 @@ class Config:
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
     
     # RAG 설정
-    RAG_PERSIST_DIR = str(PROJECT_ROOT / '.maic' / 'persist')
-    CHROMA_PERSIST_DIR = str(PROJECT_ROOT / '.maic' / 'chroma')
+    RAG_PERSIST_DIR = str(PROJECT_ROOT / '.like' / 'persist')
+    CHROMA_PERSIST_DIR = str(PROJECT_ROOT / '.like' / 'chroma')
     
     # 로깅 설정
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
-    LOG_FILE = str(PROJECT_ROOT / 'logs' / 'maic.log')
+    LOG_FILE = str(PROJECT_ROOT / 'logs' / 'like.log')
 
 class DevelopmentConfig(Config):
     """개발 환경 설정"""

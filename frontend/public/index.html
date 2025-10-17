@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAIC Flask Optimized - Demo</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        /* 기본 스타일 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c, #5a5d7c);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .demo-section {
+            background: rgba(44, 47, 72, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .demo-section h2 {
+            margin-bottom: 1.5rem;
+            color: #c1c3e0;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .demo-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .demo-item h3 {
+            margin-bottom: 1rem;
+            color: #a1a3c0;
+        }
+        
+        .demo-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-boundary {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #ef4444;
+        }
+        
+        .reload-button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+        
+        .reload-button:hover {
+            background: #5b5cf0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>MAIC Flask Optimized</h1>
+            <p>재사용 가능한 컴포넌트 시스템 데모</p>
+        </div>
+        
+        <!-- 로딩 스피너 -->
+        <div class="loading" id="loading-spinner">
+            <div class="spinner"></div>
+            <p>컴포넌트를 로드하는 중...</p>
+        </div>
+        
+        <!-- 에러 경계 -->
+        <div class="error-boundary" id="error-boundary">
+            <h3>오류가 발생했습니다</h3>
+            <p id="error-message">알 수 없는 오류가 발생했습니다.</p>
+            <button class="reload-button" id="reload-button">페이지 새로고침</button>
+        </div>
+        
+        <!-- 메인 콘텐츠 -->
+        <div id="app" style="display: none;">
+            <!-- 버튼 데모 -->
+            <div class="demo-section">
+                <h2>🎯 버튼 컴포넌트</h2>
+                <div class="demo-grid">
+                    <div class="demo-item">
+                        <h3>기본 버튼들</h3>
+                        <div class="demo-controls" id="button-demo">
+                            <!-- 버튼들이 여기에 생성됩니다 -->
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <h3>버튼 상태</h3>
+                        <div class="demo-controls" id="button-state-demo">
+                            <!-- 상태 버튼들이 여기에 생성됩니다 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 토글 스위치 데모 -->
+            <div class="demo-section">
+                <h2>🔄 토글 스위치 컴포넌트</h2>
+                <div class="demo-grid">
+                    <div class="demo-item">
+                        <h3>Professor G 설정</h3>
+                        <div id="professor-g-toggle">
+                            <!-- Professor G 토글이 여기에 생성됩니다 -->
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <h3>학습 모드</h3>
+                        <div id="mode-toggles">
+                            <!-- 학습 모드 토글들이 여기에 생성됩니다 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 모달 데모 -->
+            <div class="demo-section">
+                <h2>📋 모달 컴포넌트</h2>
+                <div class="demo-grid">
+                    <div class="demo-item">
+                        <h3>모달 테스트</h3>
+                        <div class="demo-controls" id="modal-demo">
+                            <!-- 모달 버튼들이 여기에 생성됩니다 -->
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <h3>상태 정보</h3>
+                        <div id="status-info">
+                            <div class="status" id="professor-g-status">Professor G: 활성화</div>
+                            <div class="status" id="mode-status">학습 모드: 문법, 문장분석, 지문설명</div>
+                            <div class="status" id="api-status">API 상태: 연결 확인 중...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 스크립트는 Webpack이 자동으로 주입합니다 -->
+</body>
+</html>

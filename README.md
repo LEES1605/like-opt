@@ -1,8 +1,8 @@
-# MAIC Flask Optimized
+# Like-Opt
 
 ## 🤖 AI-Powered English Learning Platform
 
-**MAIC Flask Optimized**는 Professor G를 활용한 최적화된 영어 학습 플랫폼입니다.
+**Like-Opt**는 Professor G를 활용한 최적화된 영어 학습 플랫폼입니다.
 
 ### ✨ 주요 기능
 
@@ -15,7 +15,7 @@
 ### 🏗️ 프로젝트 구조
 
 ```
-maic-flask-opt/
+like-opt/
 ├── backend/                 # Flask API 서버
 │   ├── app/
 │   │   ├── api/            # API 엔드포인트
@@ -83,4 +83,4 @@ npm start
 
 ### 📞 연락처
 
-프로젝트 링크: [https://github.com/your-username/maic-flask-opt](https://github.com/your-username/maic-flask-opt)
+프로젝트 링크: [https://github.com/your-username/like-opt](https://github.com/your-username/like-opt)

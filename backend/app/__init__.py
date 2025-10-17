@@ -46,27 +46,47 @@ def create_app(config_class=Config):
     # 에러 핸들러 등록
     register_error_handlers(app)
     
+    # Static 라우트 등록
+    register_static_routes(app)
+    
     return app
 
 def register_blueprints(app):
     """블루프린트 등록"""
     try:
-        # API 블루프린트
+        # 메인 API 블루프린트
         from .api import api_bp
         app.register_blueprint(api_bp, url_prefix='/api/v1')
+        
+        # 채팅 API 블루프린트
+        from .api.chat import chat_bp
+        app.register_blueprint(chat_bp, url_prefix='/api/v1')
         
         # 관리자 블루프린트
         from .api.admin import admin_bp
         app.register_blueprint(admin_bp, url_prefix='/api/v1/admin')
         
-        # 인증 블루프린트
-        from .api.auth import auth_bp
-        app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
+        # 인증 블루프린트 (향후 구현)
+        # from .api.auth import auth_bp
+        # app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
         
-        print("✅ 블루프린트 등록 완료")
+        print("Blueprints registered successfully")
         
     except ImportError as e:
-        print(f"⚠️ 블루프린트 등록 중 오류 (개발 중일 수 있음): {e}")
+        print(f"Blueprint registration error (may be in development): {e}")
+
+def register_static_routes(app):
+    """Static 파일 라우트 등록"""
+    
+    @app.route('/')
+    def index():
+        """메인 페이지"""
+        return app.send_static_file('medal-demo.html')
+    
+    @app.route('/medal-demo')
+    def medal_demo():
+        """메달 데모 페이지"""
+        return app.send_static_file('medal-demo.html')
 
 def register_error_handlers(app):
     """에러 핸들러 등록"""

@@ -1,0 +1,223 @@
+/* Button Component Styles */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-speed) var(--transition-easing);
+  outline: none;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Button Types */
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: var(--neumorphic-shadow-dark-1), var(--neumorphic-shadow-dark-2);
+}
+
+.btn-primary:hover {
+  background: #5b5cf0;
+  transform: translateY(-1px);
+  box-shadow: var(--neumorphic-shadow-hard);
+}
+
+.btn-secondary {
+  background: var(--color-secondary);
+  color: white;
+  box-shadow: var(--neumorphic-shadow-dark-1), var(--neumorphic-shadow-dark-2);
+}
+
+.btn-secondary:hover {
+  background: #7c3aed;
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background: var(--color-success);
+  color: white;
+  box-shadow: var(--neumorphic-shadow-dark-1), var(--neumorphic-shadow-dark-2);
+}
+
+.btn-warning {
+  background: var(--color-warning);
+  color: white;
+  box-shadow: var(--neumorphic-shadow-dark-1), var(--neumorphic-shadow-dark-2);
+}
+
+.btn-danger {
+  background: var(--color-error);
+  color: white;
+  box-shadow: var(--neumorphic-shadow-dark-1), var(--neumorphic-shadow-dark-2);
+}
+
+.btn-link {
+  background: transparent;
+  color: var(--color-primary);
+  box-shadow: none;
+  padding: 0.5rem 1rem;
+}
+
+.btn-link:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: none;
+}
+
+/* Button Sizes */
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
+}
+
+.btn-medium {
+  padding: 0.75rem 1.5rem;
+  font-size: var(--font-size-md);
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: var(--font-size-lg);
+}
+
+/* Button States */
+.btn-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-disabled:hover {
+  transform: none !important;
+  box-shadow: var(--neumorphic-shadow-dark-1), var(--neumorphic-shadow-dark-2);
+}
+
+.btn-loading {
+  cursor: wait;
+  opacity: 0.8;
+}
+
+.btn-loading .button-text {
+  opacity: 0.7;
+}
+
+/* Button Variants */
+.btn-block {
+  width: 100%;
+  display: flex;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-outline:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-primary);
+  box-shadow: none;
+}
+
+.btn-ghost:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.btn-round {
+  border-radius: var(--border-radius-full);
+}
+
+/* Button Icons */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn-icon-loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Button Group */
+.btn-group {
+  display: inline-flex;
+  gap: 0;
+}
+
+.btn-group-horizontal {
+  flex-direction: row;
+}
+
+.btn-group-vertical {
+  flex-direction: column;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: var(--border-radius-md);
+  border-bottom-left-radius: var(--border-radius-md);
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: var(--border-radius-md);
+  border-bottom-right-radius: var(--border-radius-md);
+  border-right: none;
+}
+
+.btn-group-vertical .btn {
+  border-right: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-group-vertical .btn:first-child {
+  border-top-left-radius: var(--border-radius-md);
+  border-top-right-radius: var(--border-radius-md);
+  border-bottom-left-radius: 0;
+}
+
+.btn-group-vertical .btn:last-child {
+  border-bottom-left-radius: var(--border-radius-md);
+  border-bottom-right-radius: var(--border-radius-md);
+  border-top-right-radius: 0;
+  border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: var(--font-size-sm);
+  }
+  
+  .btn-large {
+    padding: 0.875rem 1.75rem;
+    font-size: var(--font-size-md);
+  }
+}

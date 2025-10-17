@@ -1,0 +1,95 @@
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  margin: 8px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) var(--transition-easing);
+  outline: none;
+  box-shadow: var(--neumorphic-shadow-dark-1), var(--neumorphic-shadow-dark-2);
+  background: var(--color-surface-dark);
+  color: var(--color-text-light);
+  min-width: 120px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    var(--neumorphic-shadow-dark-1), 
+    var(--neumorphic-shadow-dark-2),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.05),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: var(--neumorphic-shadow-inset-dark-1), var(--neumorphic-shadow-inset-dark-2);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--neumorphic-shadow-inset-dark-1), var(--neumorphic-shadow-inset-dark-2);
+}
+
+/* Button Types */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--color-surface-dark), var(--color-surface-dark));
+  color: var(--color-text-light);
+  border: 1px solid var(--color-border-dark);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--color-success), #059669);
+  color: white;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--color-warning), #d97706);
+  color: white;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-error), #dc2626);
+  color: white;
+}
+
+/* Button States */
+.btn-loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.btn-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
