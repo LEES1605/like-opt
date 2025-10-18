@@ -44,6 +44,33 @@
             position: relative;
         }
         
+        /* 메인 컨텐츠 영역 - 스크롤 방지 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: calc(100vh - 1rem);
+            box-sizing: border-box;
+        }
+        
+        /* 모든 섹션의 높이 제한 */
+        .header {
+            flex-shrink: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .input-section {
+            flex-shrink: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .response-area {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        
         /* 상태 표시창 */
         .status-indicator-floating {
             position: fixed;
@@ -316,9 +343,9 @@
             margin: 0.25rem 0;
             box-shadow: inset 8px 8px 16px rgba(0, 0, 0, 0.3), inset -8px -8px 16px rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            height: 200px;
+            flex: 1;
+            min-height: 0;
             overflow: hidden;
-            flex-shrink: 0;
         }
         
         .response-content {
@@ -723,8 +750,8 @@
             }
             
             .response-area {
-                min-height: 300px;
-                max-height: 400px;
+                min-height: 200px;
+                max-height: 250px;
             }
             
             .message-bubble {
@@ -772,37 +799,39 @@
     </div>
     
     <div class="container">
-        <!-- 헤더 -->
-        <div class="header">
-            <h1 class="title gradient-text">LEES AI Teacher</h1>
-            <p class="subtitle">질문은 천재들이 즐겨쓰는 공부방법이다!</p>
-        </div>
-        
-        <!-- 모드 선택 -->
-        <div class="input-section">
-            <h3 id="mode-selector-title" class="section-title">질문 모드</h3>
-            <div class="mode-selector">
-                <button class="mode-btn" onclick="selectMode('grammar', this)">문법 학습</button>
-                <button class="mode-btn" onclick="selectMode('sentence', this)">문장 분석</button>
-                <button class="mode-btn" onclick="selectMode('passage', this)">지문 설명</button>
+        <div class="main-content">
+            <!-- 헤더 -->
+            <div class="header">
+                <h1 class="title gradient-text">LEES AI Teacher</h1>
+                <p class="subtitle">질문은 천재들이 즐겨쓰는 공부방법이다!</p>
             </div>
-            <div class="difficulty-panel" id="difficulty-panel" aria-hidden="true">
-                <div class="difficulty-selector" id="difficulty-selector">
-                    <button class="difficulty-btn" onclick="selectDifficulty('elementary', this)">초급</button>
-                    <button class="difficulty-btn active" onclick="selectDifficulty('intermediate', this)">중급</button>
-                    <button class="difficulty-btn" onclick="selectDifficulty('advanced', this)">고급</button>
+            
+            <!-- 모드 선택 -->
+            <div class="input-section">
+                <h3 id="mode-selector-title" class="section-title">질문 모드</h3>
+                <div class="mode-selector">
+                    <button class="mode-btn" onclick="selectMode('grammar', this)">문법 학습</button>
+                    <button class="mode-btn" onclick="selectMode('sentence', this)">문장 분석</button>
+                    <button class="mode-btn" onclick="selectMode('passage', this)">지문 설명</button>
+                </div>
+                <div class="difficulty-panel" id="difficulty-panel" aria-hidden="true">
+                    <div class="difficulty-selector" id="difficulty-selector">
+                        <button class="difficulty-btn" onclick="selectDifficulty('elementary', this)">초급</button>
+                        <button class="difficulty-btn active" onclick="selectDifficulty('intermediate', this)">중급</button>
+                        <button class="difficulty-btn" onclick="selectDifficulty('advanced', this)">고급</button>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- 응답 영역 -->
-        <div class="response-area" id="response-area">
-            <div class="chat-messages">
-                <div class="message assistant">
-                    <div class="message-bubble">
-                        <div>안녕하세요! 저는 Professor G입니다. 🎓</div>
-                        <div>영어 학습을 도와드리겠습니다. 어떤 모드로 학습하고 싶으신가요?</div>
-                        <div class="message-time" id="welcomeTime"></div>
+            
+            <!-- 응답 영역 -->
+            <div class="response-area" id="response-area">
+                <div class="chat-messages">
+                    <div class="message assistant">
+                        <div class="message-bubble">
+                            <div>안녕하세요! 저는 Professor G입니다. 🎓</div>
+                            <div>영어 학습을 도와드리겠습니다. 어떤 모드로 학습하고 싶으신가요?</div>
+                            <div class="message-time" id="welcomeTime"></div>
+                        </div>
                     </div>
                 </div>
             </div>
