@@ -287,6 +287,90 @@ def settings():
         user_role='admin'
     )
 
+@admin_bp.route('/mode-management')
+def mode_management():
+    """
+    모드관리 페이지
+    """
+    # 관리자 권한 확인
+    if not auth_service.is_authenticated() or auth_service.get_user_role() != 'admin':
+        return render_template('error.html',
+            error='관리자 권한이 필요합니다.',
+            redirect_url='/'
+        ), 403
+    
+    return render_template(
+        'admin/mode_management.html',
+        user_role='admin'
+    )
+
+@admin_bp.route('/api/modes', methods=['GET'])
+def get_modes():
+    """
+    현재 설정된 모드들 조회
+    """
+    try:
+        # 현재 설정된 모드들 반환
+        modes = {
+            'grammar': {
+                'name': '문법 학습',
+                'enabled': True,
+                'difficulty_levels': ['elementary', 'intermediate', 'advanced'],
+                'current_difficulty': 'intermediate'
+            },
+            'sentence': {
+                'name': '문장 분석',
+                'enabled': True,
+                'difficulty_levels': ['elementary', 'intermediate', 'advanced'],
+                'current_difficulty': 'intermediate'
+            },
+            'passage': {
+                'name': '지문 설명',
+                'enabled': True,
+                'difficulty_levels': ['elementary', 'intermediate', 'advanced'],
+                'current_difficulty': 'intermediate'
+            }
+        }
+        
+        return jsonify({
+            'success': True,
+            'modes': modes
+        })
+        
+    except Exception as e:
+        print(f"[Mode Management] 오류: {e}")
+        return jsonify({
+            'success': False,
+            'error': '모드 조회 중 오류가 발생했습니다.'
+        }), 500
+
+@admin_bp.route('/api/modes/<mode_id>', methods=['PUT'])
+def update_mode(mode_id):
+    """
+    특정 모드 설정 업데이트
+    """
+    try:
+        data = request.get_json() or {}
+        enabled = data.get('enabled', True)
+        difficulty = data.get('difficulty', 'intermediate')
+        
+        # 모드 설정 업데이트 로직 (실제로는 데이터베이스에 저장)
+        print(f"[Mode Management] 모드 {mode_id} 업데이트: enabled={enabled}, difficulty={difficulty}")
+        
+        return jsonify({
+            'success': True,
+            'mode_id': mode_id,
+            'enabled': enabled,
+            'difficulty': difficulty
+        })
+        
+    except Exception as e:
+        print(f"[Mode Management] 오류: {e}")
+        return jsonify({
+            'success': False,
+            'error': '모드 업데이트 중 오류가 발생했습니다.'
+        }), 500
+
 
 @admin_bp.route('/status', methods=['GET'])
 def status():

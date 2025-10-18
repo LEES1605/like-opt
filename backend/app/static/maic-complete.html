@@ -89,11 +89,12 @@
         }
         
         .pulse-dot {
-            width: 8px;
-            height: 8px;
+            width: 16px;
+            height: 16px;
             background: #10b981;
             border-radius: 50%;
             animation: pulse 2s infinite;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
         }
         
         .status-text {
@@ -103,8 +104,16 @@
         }
         
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: scale(1.2);
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+            }
         }
         
         /* 플로팅 로그인 버튼들 */
@@ -573,11 +582,18 @@
         
         /* 관리자 모드 스타일 */
         .admin-mode .title {
-            color: #f59e0b;
+            color: #f59e0b !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 2.5rem !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
         }
-        
+
         .admin-mode .gradient-text {
-            background: linear-gradient(135deg, #8b9cf7 0%, #9d7bf0 50%, #f5a5fc 100%);
+            background: linear-gradient(135deg, #8b9cf7 0%, #9d7bf0 50%, #f5a5fc 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
         }
         
         /* 관리자 카드 스타일 */
@@ -911,6 +927,51 @@
         function adminLogout() {
             console.log('관리자 로그아웃');
             showStudentMode();
+        }
+        
+        // 모드 설정 저장
+        function saveModeSettings() {
+            console.log('모드 설정 저장');
+            
+            // 모든 모드 설정 수집
+            const modeSettings = {};
+            const modeItems = document.querySelectorAll('.mode-config-item');
+            
+            modeItems.forEach((item, index) => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                const select = item.querySelector('.difficulty-select');
+                const modeName = ['grammar', 'sentence', 'passage'][index];
+                
+                if (checkbox && select) {
+                    modeSettings[modeName] = {
+                        enabled: checkbox.checked,
+                        difficulty: select.value
+                    };
+                }
+            });
+            
+            console.log('저장할 모드 설정:', modeSettings);
+            
+            // API 호출로 설정 저장
+            fetch('/api/v1/admin/api/modes', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(modeSettings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('모드 설정이 저장되었습니다.');
+                } else {
+                    alert('설정 저장 중 오류가 발생했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('설정 저장 오류:', error);
+                alert('설정 저장 중 오류가 발생했습니다.');
+            });
         }
         
         // 시스템 준비완료
@@ -1373,6 +1434,107 @@
                                             <h4 style="color: #ffffff; margin-bottom: 8px;">시스템 상태</h4>
                                             <p style="color: #4CAF50; margin: 4px 0;">서버: 정상</p>
                                             <p style="color: #4CAF50; margin: 4px 0;">데이터베이스: 정상</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        break;
+                    case 'question-mode':
+                        componentHTML = `
+                            <div class="admin-mode-management">
+                                <h3 style="margin: 0 0 16px 0; font-size: 1.3rem; font-weight: bold; color: #ffffff;">📚 모드관리</h3>
+                                
+                                <!-- 모드 설정 카드 -->
+                                <div class="adm-card-system" style="margin-bottom: 16px;">
+                                    <h4 style="margin: 0 0 12px 0; color: #ffffff;">학습 모드 설정</h4>
+                                    
+                                    <!-- 문법 학습 모드 -->
+                                    <div class="mode-config-item" style="margin-bottom: 12px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <h5 style="margin: 0; color: #ffffff;">📖 문법 학습</h5>
+                                                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #ccc;">영어 문법 규칙과 사용법 학습</p>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <select class="difficulty-select" style="padding: 4px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2);">
+                                                    <option value="elementary">초급</option>
+                                                    <option value="intermediate" selected>중급</option>
+                                                    <option value="advanced">고급</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 문장 분석 모드 -->
+                                    <div class="mode-config-item" style="margin-bottom: 12px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <h5 style="margin: 0; color: #ffffff;">🔍 문장 분석</h5>
+                                                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #ccc;">문장 구조와 문법 요소 분석</p>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <select class="difficulty-select" style="padding: 4px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2);">
+                                                    <option value="elementary">초급</option>
+                                                    <option value="intermediate" selected>중급</option>
+                                                    <option value="advanced">고급</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 지문 설명 모드 -->
+                                    <div class="mode-config-item" style="margin-bottom: 12px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <h5 style="margin: 0; color: #ffffff;">📄 지문 설명</h5>
+                                                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #ccc;">긴 지문의 내용과 구조 설명</p>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <select class="difficulty-select" style="padding: 4px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2);">
+                                                    <option value="elementary">초급</option>
+                                                    <option value="intermediate" selected>중급</option>
+                                                    <option value="advanced">고급</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 저장 버튼 -->
+                                    <div style="margin-top: 16px; text-align: center;">
+                                        <button class="adm-btn-menu" onclick="saveModeSettings()" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                                            💾 설정 저장
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 모드 통계 -->
+                                <div class="adm-card-system">
+                                    <h4 style="margin: 0 0 12px 0; color: #ffffff;">모드 사용 통계</h4>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                                        <div style="text-align: center; padding: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 6px;">
+                                            <div style="font-size: 1.2rem; font-weight: bold; color: #10b981;">1,234</div>
+                                            <div style="font-size: 0.8rem; color: #ccc;">문법 학습</div>
+                                        </div>
+                                        <div style="text-align: center; padding: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 6px;">
+                                            <div style="font-size: 1.2rem; font-weight: bold; color: #3b82f6;">856</div>
+                                            <div style="font-size: 0.8rem; color: #ccc;">문장 분석</div>
+                                        </div>
+                                        <div style="text-align: center; padding: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 6px;">
+                                            <div style="font-size: 1.2rem; font-weight: bold; color: #f59e0b;">567</div>
+                                            <div style="font-size: 0.8rem; color: #ccc;">지문 설명</div>
                                         </div>
                                     </div>
                                 </div>
