@@ -299,6 +299,37 @@
             box-shadow: inset 8px 8px 16px rgba(0, 0, 0, 0.3), inset -8px -8px 16px rgba(255, 255, 255, 0.1);
         }
         
+        /* 난이도 슬라이더 스타일 */
+        .difficulty-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .difficulty-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .difficulty-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
         /* 난이도 선택 */
         .difficulty-panel {
             margin-top: 0.5rem;
@@ -935,17 +966,19 @@
             
             // 모든 모드 설정 수집
             const modeSettings = {};
-            const modeItems = document.querySelectorAll('.mode-config-item');
+            const modeNames = ['grammar', 'sentence', 'passage'];
             
-            modeItems.forEach((item, index) => {
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                const select = item.querySelector('.difficulty-select');
-                const modeName = ['grammar', 'sentence', 'passage'][index];
+            modeNames.forEach(modeName => {
+                const toggle = document.getElementById(`${modeName}-toggle`);
+                const slider = document.getElementById(`${modeName}-difficulty`);
                 
-                if (checkbox && select) {
+                if (toggle && slider) {
+                    const difficultyLevels = ['elementary', 'intermediate', 'advanced'];
+                    const difficulty = difficultyLevels[slider.value - 1];
+                    
                     modeSettings[modeName] = {
-                        enabled: checkbox.checked,
-                        difficulty: select.value
+                        enabled: toggle.checked,
+                        difficulty: difficulty
                     };
                 }
             });
@@ -1085,6 +1118,11 @@
                 // AI 준비 환경 버튼을 활성화
                 const indexingBtn = document.querySelector('button[data-action="indexing"]');
                 if (indexingBtn) {
+                    // 모든 버튼에서 active 클래스 제거
+                    const allAdminButtons = document.querySelectorAll('.adm-btn-menu');
+                    allAdminButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // AI 준비 환경 버튼만 활성화
                     indexingBtn.classList.add('active');
                 }
             }, 100);
@@ -1219,6 +1257,13 @@
                 button.addEventListener('click', function() {
                     const action = this.getAttribute('data-action');
                     console.log('관리자 메뉴 클릭:', action);
+                    
+                    // 모든 버튼에서 active 클래스 제거
+                    adminButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // 클릭된 버튼에 active 클래스 추가
+                    this.classList.add('active');
+                    
                     loadAdminComponent(action);
                 });
             });
@@ -1456,16 +1501,19 @@
                                                 <h5 style="margin: 0; color: #ffffff;">📖 문법 학습</h5>
                                                 <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #ccc;">영어 문법 규칙과 사용법 학습</p>
                                             </div>
-                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
                                                 <label class="toggle-switch">
-                                                    <input type="checkbox" checked>
+                                                    <input type="checkbox" id="grammar-toggle" checked>
                                                     <span class="toggle-slider"></span>
                                                 </label>
-                                                <select class="difficulty-select" style="padding: 4px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2);">
-                                                    <option value="elementary">초급</option>
-                                                    <option value="intermediate" selected>중급</option>
-                                                    <option value="advanced">고급</option>
-                                                </select>
+                                                <div class="difficulty-slider-container">
+                                                    <div class="difficulty-labels" style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.8rem; color: #ccc;">
+                                                        <span>초급</span>
+                                                        <span>중급</span>
+                                                        <span>고급</span>
+                                                    </div>
+                                                    <input type="range" class="difficulty-slider" id="grammar-difficulty" min="1" max="3" value="2" style="width: 120px;">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1477,16 +1525,19 @@
                                                 <h5 style="margin: 0; color: #ffffff;">🔍 문장 분석</h5>
                                                 <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #ccc;">문장 구조와 문법 요소 분석</p>
                                             </div>
-                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
                                                 <label class="toggle-switch">
-                                                    <input type="checkbox" checked>
+                                                    <input type="checkbox" id="sentence-toggle" checked>
                                                     <span class="toggle-slider"></span>
                                                 </label>
-                                                <select class="difficulty-select" style="padding: 4px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2);">
-                                                    <option value="elementary">초급</option>
-                                                    <option value="intermediate" selected>중급</option>
-                                                    <option value="advanced">고급</option>
-                                                </select>
+                                                <div class="difficulty-slider-container">
+                                                    <div class="difficulty-labels" style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.8rem; color: #ccc;">
+                                                        <span>초급</span>
+                                                        <span>중급</span>
+                                                        <span>고급</span>
+                                                    </div>
+                                                    <input type="range" class="difficulty-slider" id="sentence-difficulty" min="1" max="3" value="2" style="width: 120px;">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1498,16 +1549,19 @@
                                                 <h5 style="margin: 0; color: #ffffff;">📄 지문 설명</h5>
                                                 <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #ccc;">긴 지문의 내용과 구조 설명</p>
                                             </div>
-                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
                                                 <label class="toggle-switch">
-                                                    <input type="checkbox" checked>
+                                                    <input type="checkbox" id="passage-toggle" checked>
                                                     <span class="toggle-slider"></span>
                                                 </label>
-                                                <select class="difficulty-select" style="padding: 4px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2);">
-                                                    <option value="elementary">초급</option>
-                                                    <option value="intermediate" selected>중급</option>
-                                                    <option value="advanced">고급</option>
-                                                </select>
+                                                <div class="difficulty-slider-container">
+                                                    <div class="difficulty-labels" style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.8rem; color: #ccc;">
+                                                        <span>초급</span>
+                                                        <span>중급</span>
+                                                        <span>고급</span>
+                                                    </div>
+                                                    <input type="range" class="difficulty-slider" id="passage-difficulty" min="1" max="3" value="2" style="width: 120px;">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
