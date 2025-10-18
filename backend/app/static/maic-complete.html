@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEES AI Teacher - 영어 학습 도우미</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c, #5a5d7c) !important;
+            color: #c1c3e0 !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: fixed !important;
+            width: 100% !important;
+            background-color: #3a3d5c !important;
+        }
+        
+        html {
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c, #5a5d7c) !important;
+            background-color: #3a3d5c !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+        }
+        
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0.5rem;
+            height: 100vh !important;
+            overflow: hidden !important;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        /* 상태 표시창 */
+        .status-indicator-floating {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 10px 15px;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+        
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-text {
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* 플로팅 로그인 버튼들 */
+        .floating-login-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .ready-btn {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .ready-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.1);
+        }
+        
+        .ready-btn:active {
+            transform: translateY(0);
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .admin-login-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            padding: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-login-btn:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 12px 12px 24px rgba(0, 0, 0, 0.4), -12px -12px 24px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 헤더 */
+        .header {
+            text-align: center;
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+            flex-shrink: 0;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #8b9cf7 0%, #9d7bf0 50%, #f5a5fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(139, 156, 247, 0.4);
+            display: inline-block;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #c1c3e0;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* 모드 선택 */
+        .input-section {
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .mode-btn {
+            background: linear-gradient(135deg, #4a4d6c, #5a5d7c);
+            border: none;
+            border-radius: 15px;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.1);
+        }
+        
+        .mode-btn:active {
+            transform: translateY(0);
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        /* 관리자 메뉴 버튼 */
+        .adm-btn-menu {
+            background: rgba(58, 61, 92, 0.8);
+            border: none;
+            border-radius: 20px;
+            color: #c1c3e0;
+            padding: 8px 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1rem;
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.1);
+        }
+        
+        .adm-btn-menu:hover {
+            transform: translateY(-2px);
+            box-shadow: 12px 12px 24px rgba(0, 0, 0, 0.4), -12px -12px 24px rgba(255, 255, 255, 0.15);
+        }
+        
+        .adm-btn-menu.active {
+            background: rgba(58, 61, 92, 0.8);
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(135deg, #8b9cf7 0%, #9d7bf0 50%, #f5a5fc 100%);
+            box-shadow: inset 8px 8px 16px rgba(0, 0, 0, 0.3), inset -8px -8px 16px rgba(255, 255, 255, 0.1);
+            transform: translateY(2px);
+        }
+        
+        .adm-btn-menu.active:hover {
+            transform: translateY(2px);
+            box-shadow: inset 8px 8px 16px rgba(0, 0, 0, 0.3), inset -8px -8px 16px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 난이도 선택 */
+        .difficulty-panel {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .difficulty-btn {
+            background: linear-gradient(135deg, #4a4d6c, #5a5d7c);
+            border: none;
+            border-radius: 12px;
+            color: #e0e0e0;
+            padding: 6px 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.1);
+        }
+        
+        .difficulty-btn:active {
+            transform: translateY(0);
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: white;
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        /* 응답 영역 - 음각 스타일 */
+        .response-area {
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            box-shadow: inset 8px 8px 16px rgba(0, 0, 0, 0.3), inset -8px -8px 16px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 200px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .response-content {
+            color: #e0e0e0;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        
+        /* 채팅 메시지 스타일 */
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 10px 0;
+        }
+        
+        .message {
+            display: flex;
+            margin-bottom: 15px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.assistant {
+            justify-content: flex-start;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+        }
+        
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .message.assistant .message-bubble {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            color: #333;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-bottom-left-radius: 4px;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 질문하기 섹션 (고정) */
+        .input-section-fixed {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1rem;
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        .input-group {
+            display: flex;
+            position: relative;
+            align-items: center;
+        }
+        
+        .question-input {
+            flex: 1;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 60px 15px 20px;
+            color: #c1c3e0;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.1);
+        }
+        
+        .question-input::placeholder {
+            color: #a1a3c0;
+        }
+        
+        .ask-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 8px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), -2px -2px 4px rgba(255, 255, 255, 0.1);
+        }
+        
+        .ask-button:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4), -3px -3px 6px rgba(255, 255, 255, 0.15);
+        }
+        
+        .ask-button:active {
+            transform: translateY(-50%) scale(0.95);
+            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.4), inset -3px -3px 6px rgba(255, 255, 255, 0.15);
+        }
+        
+        /* 관리자 로그인 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-title {
+            color: #e0e0e0;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c);
+            border: none;
+            border-radius: 12px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-input::placeholder {
+            color: #a1a3c0;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .modal-btn-secondary {
+            background: linear-gradient(135deg, #4a4d6c, #5a5d7c);
+            color: #e0e0e0;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 관리자 모드 스타일 */
+        .admin-mode .title {
+            color: #f59e0b;
+        }
+        
+        .admin-mode .gradient-text {
+            background: linear-gradient(135deg, #8b9cf7 0%, #9d7bf0 50%, #f5a5fc 100%);
+        }
+        
+        /* 관리자 카드 스타일 */
+        .adm-card-system {
+            background: rgba(44, 47, 72, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.1);
+        }
+        
+        .dashboard-card {
+            background: rgba(44, 47, 72, 0.6);
+            border-radius: 10px;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-bar-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        /* 자동복원 과정 스타일 */
+        .progress-steps-horizontal {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding: 8px 0;
+            justify-content: space-between;
+        }
+        
+        .progress-step-horizontal {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+            padding: 8px 4px;
+            background: rgba(58, 61, 92, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .progress-step-horizontal.active {
+            background: rgba(139, 156, 247, 0.3);
+            border-color: #8b9cf7;
+            box-shadow: 0 0 10px rgba(139, 156, 247, 0.4);
+        }
+        
+        .progress-step-horizontal.completed {
+            background: rgba(139, 156, 247, 0.2);
+            border-color: #8b9cf7;
+        }
+        
+        .progress-step-horizontal.error {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: #F44336;
+        }
+        
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            text-align: center;
+            line-height: 1;
+        }
+        
+        .progress-step-horizontal.active .step-number {
+            background: #8b9cf7;
+        }
+        
+        .progress-step-horizontal.completed .step-number {
+            background: #8b9cf7;
+        }
+        
+        .progress-step-horizontal.error .step-number {
+            background: #F44336;
+        }
+        
+        .step-label {
+            font-size: 10px;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 2px;
+            font-weight: 500;
+        }
+        
+        .step-status {
+            font-size: 9px;
+            color: #c1c3e0;
+            text-align: center;
+        }
+        
+        .progress-step-horizontal.active .step-status {
+            color: #2196F3;
+        }
+        
+        .progress-step-horizontal.completed .step-status {
+            color: #4CAF50;
+        }
+        
+        .progress-step-horizontal.error .step-status {
+            color: #F44336;
+        }
+        
+        /* 스핀 애니메이션 */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .mode-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .mode-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .floating-login-buttons {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                display: flex;
+                gap: 8px;
+                z-index: 1000;
+            }
+            
+            .status-indicator-floating {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                z-index: 1000;
+            }
+            
+            .response-area {
+                min-height: 300px;
+                max-height: 400px;
+            }
+            
+            .message-bubble {
+                max-width: 90%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .floating-login-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .student-login-btn, .admin-login-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .status-indicator-floating {
+                padding: 8px 12px;
+            }
+            
+            .status-text {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상태 표시창 -->
+    <div class="status-indicator-floating">
+        <div class="pulse-dot"></div>
+        <span class="status-text">준비완료</span>
+    </div>
+    
+    <!-- 로그인 버튼들 -->
+    <div class="floating-login-buttons" id="login-buttons">
+        <button class="ready-btn" onclick="readySystem()">준비완료</button>
+        <button class="admin-login-btn" id="admin-login-btn" title="관리자 로그인" onclick="adminLogin()">⚙️</button>
+    </div>
+    
+    <!-- 관리자 모드 로그아웃 버튼 (숨김) -->
+    <div class="floating-login-buttons" id="admin-logout-buttons" style="display: none;">
+        <button class="admin-login-btn" title="관리자 로그아웃" onclick="adminLogout()">🚪</button>
+    </div>
+    
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1 class="title gradient-text">LEES AI Teacher</h1>
+            <p class="subtitle">질문은 천재들이 즐겨쓰는 공부방법이다!</p>
+        </div>
+        
+        <!-- 모드 선택 -->
+        <div class="input-section">
+            <h3 id="mode-selector-title" class="section-title">질문 모드</h3>
+            <div class="mode-selector">
+                <button class="mode-btn" onclick="selectMode('grammar', this)">문법 학습</button>
+                <button class="mode-btn" onclick="selectMode('sentence', this)">문장 분석</button>
+                <button class="mode-btn" onclick="selectMode('passage', this)">지문 설명</button>
+            </div>
+            <div class="difficulty-panel" id="difficulty-panel" aria-hidden="true">
+                <div class="difficulty-selector" id="difficulty-selector">
+                    <button class="difficulty-btn" onclick="selectDifficulty('elementary', this)">초급</button>
+                    <button class="difficulty-btn active" onclick="selectDifficulty('intermediate', this)">중급</button>
+                    <button class="difficulty-btn" onclick="selectDifficulty('advanced', this)">고급</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 응답 영역 -->
+        <div class="response-area" id="response-area">
+            <div class="chat-messages">
+                <div class="message assistant">
+                    <div class="message-bubble">
+                        <div>안녕하세요! 저는 Professor G입니다. 🎓</div>
+                        <div>영어 학습을 도와드리겠습니다. 어떤 모드로 학습하고 싶으신가요?</div>
+                        <div class="message-time" id="welcomeTime"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 질문하기 섹션 (고정) -->
+    <div class="input-section-fixed" id="input-section-fixed">
+        <div class="input-group">
+            <input type="text" id="question-input" class="question-input" placeholder="질문을 입력하세요...">
+            <button class="ask-button" onclick="askQuestion()">▶</button>
+        </div>
+    </div>
+    
+    <!-- 관리자 로그인 모달 -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">관리자 로그인</h2>
+            <input type="password" id="adminPassword" class="modal-input" placeholder="비밀번호를 입력하세요" onkeypress="if(event.key==='Enter') checkPassword()">
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" id="modal-login-btn" onclick="checkPassword()">로그인</button>
+                <button class="modal-btn modal-btn-secondary" id="modal-cancel-btn" onclick="closeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let isAdminMode = false;
+        let currentMode = null;
+        let currentDifficulty = 'intermediate';
+        
+        // 학생 로그인
+        function studentLogin() {
+            console.log('학생 로그인');
+            // 학생 모드로 전환
+            showStudentMode();
+        }
+        
+        // 관리자 로그인
+        function adminLogin() {
+            console.log('관리자 로그인 모달 열기');
+            document.getElementById('passwordModal').style.display = 'block';
+            
+            // 모달 표시 후 자동으로 비밀번호 입력창에 포커스
+            setTimeout(() => {
+                const passwordInput = document.getElementById('adminPassword');
+                if (passwordInput) {
+                    passwordInput.focus();
+                }
+            }, 100);
+        }
+        
+        // 비밀번호 확인
+        async function checkPassword() {
+            console.log('비밀번호 확인');
+            const password = document.getElementById('adminPassword').value;
+            
+            // 간단한 비밀번호 확인 (실제 환경에서는 서버에서 확인)
+            if (password === 'admin123' || password === '0000') {
+                console.log('로그인 성공!');
+                closeModal();
+                showAdminMode();
+            } else {
+                console.log('로그인 실패: 비밀번호가 올바르지 않습니다.');
+                alert('비밀번호가 올바르지 않습니다. (admin123 또는 0000)');
+            }
+        }
+        
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+        
+        // 관리자 로그아웃
+        function adminLogout() {
+            console.log('관리자 로그아웃');
+            showStudentMode();
+        }
+        
+        // 시스템 준비완료
+        function readySystem() {
+            console.log('시스템 준비완료');
+            showStudentMode();
+        }
+        
+        // 학생 모드 표시
+        function showStudentMode() {
+            isAdminMode = false;
+            document.body.classList.remove('admin-mode');
+            
+            const title = document.querySelector('.title');
+            if (title) {
+                title.innerHTML = 'LEES AI Teacher';
+            }
+            
+            const modeSelectorTitle = document.getElementById('mode-selector-title');
+            if (modeSelectorTitle) {
+                modeSelectorTitle.textContent = '질문 모드';
+            }
+            
+            // 학생 모드 버튼들 표시
+            const modeButtons = document.querySelector('.mode-selector');
+            if (modeButtons) {
+                modeButtons.innerHTML = `
+                    <button class="mode-btn" onclick="selectMode('grammar', this)">문법 학습</button>
+                    <button class="mode-btn" onclick="selectMode('sentence', this)">문장 분석</button>
+                    <button class="mode-btn" onclick="selectMode('passage', this)">지문 설명</button>
+                `;
+            }
+            
+            // 난이도 섹션 표시
+            const diffSection = document.getElementById('difficulty-panel');
+            if (diffSection) {
+                diffSection.style.display = 'block';
+            }
+            
+            // 질문 입력 영역 표시
+            const inputSections = document.querySelectorAll('.input-section-fixed, #input-section-fixed');
+            inputSections.forEach(section => {
+                section.style.display = 'block';
+                section.style.visibility = 'visible';
+                section.style.opacity = '1';
+            });
+            
+            // 로그인 버튼 표시
+            document.getElementById('login-buttons').style.display = 'flex';
+            document.getElementById('admin-logout-buttons').style.display = 'none';
+            
+            // 상태 업데이트
+            updateStatus('학생 모드');
+        }
+        
+        // 관리자 모드 표시
+        function showAdminMode() {
+            console.log('관리자 모드 표시');
+            isAdminMode = true;
+            document.body.classList.add('admin-mode');
+            
+            const title = document.querySelector('.title');
+            if (title) {
+                title.innerHTML = 'LEES AI Teacher - 관리자 모드';
+            }
+            
+            const modeSelectorTitle = document.getElementById('mode-selector-title');
+            if (modeSelectorTitle) {
+                modeSelectorTitle.textContent = '관리자 메뉴';
+            }
+            
+            // 관리자 메뉴 버튼들 표시 (기존 리포와 100% 동일)
+            const modeButtons = document.querySelector('.mode-selector');
+            if (modeButtons) {
+                modeButtons.innerHTML = `
+                    <button class="mode-btn adm-btn-menu" data-action="indexing">AI 준비 환경</button>
+                    <button class="mode-btn adm-btn-menu" data-action="dashboard">대시보드</button>
+                    <button class="mode-btn adm-btn-menu" data-action="question-mode">모드관리</button>
+                    <button class="mode-btn adm-btn-menu" data-action="user-management">회원관리</button>
+                    <button class="mode-btn adm-btn-menu" data-action="prompt-management">프롬프트 관리</button>
+                    <button class="mode-btn adm-btn-menu" data-action="system-management">시스템 관리</button>
+                    <button class="mode-btn adm-btn-menu" data-action="data-logs">데이터&로그</button>
+                `;
+                
+                // 관리자 버튼 이벤트 리스너 등록
+                attachAdminButtonListeners();
+            }
+            
+            // 난이도 섹션 숨김
+            const diffSection = document.getElementById('difficulty-panel');
+            if (diffSection) {
+                diffSection.style.display = 'none';
+            }
+            
+            // 질문 입력 영역 숨김
+            const inputSections = document.querySelectorAll('.input-section-fixed, #input-section-fixed');
+            inputSections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // 로그아웃 버튼 표시
+            document.getElementById('login-buttons').style.display = 'none';
+            document.getElementById('admin-logout-buttons').style.display = 'flex';
+            
+            // 상태 업데이트
+            updateStatus('관리자 모드');
+            
+            // AI 준비 환경을 기본값으로 표시
+            setTimeout(() => {
+                loadAdminComponent('indexing');
+                // AI 준비 환경 버튼을 활성화
+                const indexingBtn = document.querySelector('button[data-action="indexing"]');
+                if (indexingBtn) {
+                    indexingBtn.classList.add('active');
+                }
+            }, 100);
+        }
+        
+        // 모드 선택
+        function selectMode(mode, element) {
+            console.log('모드 선택:', mode);
+            currentMode = mode;
+            
+            // 모든 버튼에서 active 클래스 제거
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 선택된 버튼에 active 클래스 추가
+            element.classList.add('active');
+            
+            // 모든 모드에서 난이도 선택 표시
+            const difficultyPanel = document.getElementById('difficulty-panel');
+            difficultyPanel.style.display = 'block';
+            difficultyPanel.setAttribute('aria-hidden', 'false');
+            
+            // 응답 영역 업데이트
+            updateResponseArea();
+        }
+        
+        // 난이도 선택
+        function selectDifficulty(difficulty, element) {
+            console.log('난이도 선택:', difficulty);
+            currentDifficulty = difficulty;
+            
+            // 모든 버튼에서 active 클래스 제거
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 선택된 버튼에 active 클래스 추가
+            element.classList.add('active');
+        }
+        
+        // 질문하기
+        async function askQuestion() {
+            const questionInput = document.getElementById('question-input');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                alert('질문을 입력해주세요.');
+                return;
+            }
+            
+            if (!currentMode) {
+                alert('학습 모드를 선택해주세요.');
+                return;
+            }
+            
+            console.log('질문 전송:', question, '모드:', currentMode, '난이도:', currentDifficulty);
+            
+            // 사용자 메시지 추가
+            addMessage('user', question);
+            
+            // 프롬프트 기반 답변 생성
+            const response = generatePromptResponse(question, currentMode, currentDifficulty);
+            
+            // AI 응답 추가 (약간의 지연으로 자연스러운 느낌)
+            setTimeout(() => {
+                addMessage('assistant', response);
+            }, 1000);
+            
+            // 입력창 초기화
+            questionInput.value = '';
+        }
+        
+        // 프롬프트 기반 답변 생성
+        function generatePromptResponse(question, mode, difficulty) {
+            const responses = {
+                grammar: {
+                    elementary: `안녕하세요! 문법 학습을 도와드리겠습니다. "${question}"에 대해 초급 수준으로 설명드리겠습니다.`,
+                    intermediate: `문법 학습 모드입니다. "${question}"에 대해 중급 수준으로 자세히 설명드리겠습니다.`,
+                    advanced: `고급 문법 학습입니다. "${question}"에 대해 심화된 내용으로 설명드리겠습니다.`
+                },
+                sentence: {
+                    elementary: `문장 분석을 도와드리겠습니다. "${question}"을 초급 수준으로 분석해보겠습니다.`,
+                    intermediate: `문장 분석 모드입니다. "${question}"을 중급 수준으로 상세히 분석해드리겠습니다.`,
+                    advanced: `고급 문장 분석입니다. "${question}"을 고급 수준으로 심화 분석해드리겠습니다.`
+                },
+                passage: {
+                    elementary: `지문 설명을 도와드리겠습니다. "${question}"을 초급 수준으로 설명드리겠습니다.`,
+                    intermediate: `지문 설명 모드입니다. "${question}"을 중급 수준으로 자세히 설명드리겠습니다.`,
+                    advanced: `고급 지문 설명입니다. "${question}"을 고급 수준으로 심화 설명드리겠습니다.`
+                }
+            };
+            
+            return responses[mode][difficulty] || '죄송합니다. 답변을 생성할 수 없습니다.';
+        }
+        
+        // 메시지 추가
+        function addMessage(role, content) {
+            const responseArea = document.getElementById('response-area');
+            
+            // 기존 내용을 채팅 메시지로 변환
+            if (!responseArea.querySelector('.chat-messages')) {
+                responseArea.innerHTML = '<div class="chat-messages"></div>';
+            }
+            
+            const chatMessages = responseArea.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const time = new Date().toLocaleTimeString('ko-KR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div>${content}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // 스크롤을 맨 아래로
+            responseArea.scrollTop = responseArea.scrollHeight;
+        }
+        
+        // 관리자 버튼 이벤트 리스너 등록
+        function attachAdminButtonListeners() {
+            const adminButtons = document.querySelectorAll('.adm-btn-menu');
+            adminButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    console.log('관리자 메뉴 클릭:', action);
+                    loadAdminComponent(action);
+                });
+            });
+        }
+        
+        // 관리자 컴포넌트 로드
+        async function loadAdminComponent(componentName) {
+            console.log('관리자 컴포넌트 로드:', componentName);
+            
+            const responseArea = document.getElementById('response-area');
+            if (responseArea) {
+                let componentHTML = '';
+                
+                switch(componentName) {
+                    case 'indexing':
+                        componentHTML = `
+                            <div class="admin-indexing">
+                                <!-- 자동 복원 과정 (전체 너비) -->
+                                <div class="adm-card-system" style="margin-bottom: 16px;">
+                                    <h3 style="margin: 0 0 12px 0; font-size: 1.3rem; font-weight: bold; color: #ffffff;">🔄 자동 복원</h3>
+                                    <div style="display:flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem;">
+                                        <button class="adm-btn-menu" onclick="simulateAutoRestore()">수동 복원 시작</button>
+                                        <button class="adm-btn-menu" onclick="refreshRestoreStatus()">상태 새로고침</button>
+                                        <button class="adm-btn-menu" onclick="resetRestore()">초기화</button>
+                                    </div>
+
+                                    <div class="restore-progress-bar inside-card" style="margin-top: 1rem;">
+                                        <div class="progress-steps-horizontal" id="progress-steps">
+                                            <!-- 13개 자동복원 단계 -->
+                                            <div class="progress-step-horizontal" id="step-1">
+                                                <div class="step-number">1</div>
+                                                <div class="step-label">환경 확인</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-2">
+                                                <div class="step-number">2</div>
+                                                <div class="step-label">자격증명</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-3">
+                                                <div class="step-number">3</div>
+                                                <div class="step-label">파일목록</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-4">
+                                                <div class="step-number">4</div>
+                                                <div class="step-label">검증</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-5">
+                                                <div class="step-number">5</div>
+                                                <div class="step-label">추출</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-6">
+                                                <div class="step-number">6</div>
+                                                <div class="step-label">청크</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-7">
+                                                <div class="step-number">7</div>
+                                                <div class="step-label">인덱스</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-8">
+                                                <div class="step-number">8</div>
+                                                <div class="step-label">통계</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-9">
+                                                <div class="step-number">9</div>
+                                                <div class="step-label">프롬프트</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-10">
+                                                <div class="step-number">10</div>
+                                                <div class="step-label">검색</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-11">
+                                                <div class="step-number">11</div>
+                                                <div class="step-label">플래그</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-12">
+                                                <div class="step-number">12</div>
+                                                <div class="step-label">완료</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                            <div class="progress-step-horizontal" id="step-13">
+                                                <div class="step-number">13</div>
+                                                <div class="step-label">배포</div>
+                                                <div class="step-status">대기 중</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                                        </div>
+                                        
+                                        <div id="restore-status-message" class="status-message" style="text-align: center; margin-top: 1rem; color: #ffffff;">
+                                            자동 복원 대기 중...
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Row 1: 릴리스 인덱스 (왼쪽) | AI 시스템 (오른쪽) -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                                    <!-- 릴리스 인덱스 -->
+                                    <div class="adm-card-system">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: bold; color: #ffffff;">📚 릴리스 인덱스</h3>
+                                            <button class="adm-btn-menu" onclick="refreshIndexInfo()" style="padding: 4px 8px; font-size: 11px;">새로고침</button>
+                                        </div>
+                                        <div id="release-index-status" class="index-status-info" style="padding: 8px;">
+                                            <div style="font-size: 11px; color: #ffffff; line-height: 1.4;">
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>최신 버전:</strong></span>
+                                                    <span id="latest-version" style="color: #4CAF50; font-weight: bold;">v1.2.3</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>인덱스 크기:</strong></span>
+                                                    <span id="index-size" style="color: #2196F3; font-weight: bold;">2.5MB</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>청크 수:</strong></span>
+                                                    <span id="chunk-count" style="color: #2196F3; font-weight: bold;">2,787개</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>업데이트:</strong></span>
+                                                    <span id="last-update" style="color: #FF9800; font-weight: bold;">2시간 전</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                                    <span><strong>상태:</strong></span>
+                                                    <span id="index-status" style="color: #4CAF50; font-weight: bold;">정상</span>
+                                                </div>
+                                                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                                    <button onclick="downloadIndex()" style="flex: 1; padding: 4px 8px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">
+                                                        다운로드
+                                                    </button>
+                                                    <button onclick="uploadIndex()" style="flex: 1; padding: 4px 8px; background: #2196F3; color: white; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">
+                                                        업로드
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- AI 시스템 -->
+                                    <div class="adm-card-system">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: bold; color: #ffffff;">🤖 AI 시스템</h3>
+                                            <button class="admin-mode-btn" onclick="refreshAISystemStatus()" style="padding: 4px 8px; font-size: 11px;">새로고침</button>
+                                        </div>
+                                        <div id="ai-system-status" class="index-status-info" style="padding: 8px;">
+                                            <div style="font-size: 11px; color: #ffffff; line-height: 1.4;">
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>RAG 상태:</strong></span>
+                                                    <span id="rag-status" style="color: #4CAF50; font-weight: bold;">활성화</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>벡터 인덱스:</strong></span>
+                                                    <span id="vector-count" style="color: #2196F3; font-weight: bold;">2,787개 청크</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>벡터 차원:</strong></span>
+                                                    <span id="vector-dim" style="color: #2196F3; font-weight: bold;">768차원</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>임베딩 모델:</strong></span>
+                                                    <span id="embedding-model" style="color: #2196F3; font-weight: bold;">text-embedding-3-small</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span><strong>BM25 인덱스:</strong></span>
+                                                    <span id="bm25-status" style="color: #4CAF50; font-weight: bold;">정상</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                                    <span><strong>AI 제공자:</strong></span>
+                                                    <span id="ai-providers" style="color: #FF9800; font-weight: bold;">OpenAI (gpt-4o-mini) | Gemini (gemini-2.0-flash-001)</span>
+                                                </div>
+                                                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                                    <button onclick="rebuildVector()" style="flex: 1; padding: 4px 8px; background: #FF9800; color: white; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">
+                                                        벡터 재구축
+                                                    </button>
+                                                    <button onclick="testSearch()" style="flex: 1; padding: 4px 8px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">
+                                                        검색 테스트
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        break;
+                    case 'dashboard':
+                        componentHTML = `
+                            <div class="admin-dashboard">
+                                <div class="adm-card-system" style="margin-bottom: 16px;">
+                                    <h3 style="margin: 0 0 12px 0; font-size: 1.3rem; font-weight: bold; color: #ffffff;">📊 시스템 대시보드</h3>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                                        <div class="dashboard-card">
+                                            <h4 style="color: #ffffff; margin-bottom: 8px;">사용자 통계</h4>
+                                            <p style="color: #c1c3e0; margin: 4px 0;">총 사용자: 1,234명</p>
+                                            <p style="color: #c1c3e0; margin: 4px 0;">활성 사용자: 567명</p>
+                                        </div>
+                                        <div class="dashboard-card">
+                                            <h4 style="color: #ffffff; margin-bottom: 8px;">AI 성능</h4>
+                                            <p style="color: #c1c3e0; margin: 4px 0;">응답 시간: 1.2초</p>
+                                            <p style="color: #c1c3e0; margin: 4px 0;">정확도: 95.8%</p>
+                                        </div>
+                                        <div class="dashboard-card">
+                                            <h4 style="color: #ffffff; margin-bottom: 8px;">시스템 상태</h4>
+                                            <p style="color: #4CAF50; margin: 4px 0;">서버: 정상</p>
+                                            <p style="color: #4CAF50; margin: 4px 0;">데이터베이스: 정상</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        break;
+                    default:
+                        componentHTML = `
+                            <div class="response-content">
+                                <h3>${componentName} 컴포넌트</h3>
+                                <p>이 기능은 관리자 전용입니다.</p>
+                                <p>컴포넌트: ${componentName}</p>
+                            </div>
+                        `;
+                }
+                
+                responseArea.innerHTML = componentHTML;
+            }
+        }
+        
+        // 자동복원 과정 시뮬레이션
+        function simulateAutoRestore() {
+            console.log('자동복원 과정 시작');
+            const steps = document.querySelectorAll('.progress-step-horizontal');
+            const progressBar = document.getElementById('progress-bar');
+            const statusMessage = document.getElementById('restore-status-message');
+            
+            // 초기화
+            steps.forEach(step => {
+                step.classList.remove('active', 'completed', 'error');
+                const status = step.querySelector('.step-status');
+                if (status) status.textContent = '대기 중';
+            });
+            
+            let currentStep = 0;
+            const stepNames = [
+                '환경 확인', '자격증명', '파일목록', '검증', '추출',
+                '청크', '인덱스', '통계', '프롬프트', '검색',
+                '플래그', '완료', '배포'
+            ];
+            
+            const interval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    // 이전 단계 완료
+                    if (currentStep > 0) {
+                        steps[currentStep - 1].classList.remove('active');
+                        steps[currentStep - 1].classList.add('completed');
+                        const prevStatus = steps[currentStep - 1].querySelector('.step-status');
+                        if (prevStatus) prevStatus.textContent = '완료';
+                    }
+                    
+                    // 현재 단계 활성화
+                    steps[currentStep].classList.add('active');
+                    const currentStatus = steps[currentStep].querySelector('.step-status');
+                    if (currentStatus) currentStatus.textContent = '진행 중';
+                    
+                    // 진행률 업데이트
+                    const progress = Math.round(((currentStep + 1) / steps.length) * 100);
+                    if (progressBar) progressBar.style.width = progress + '%';
+                    
+                    // 상태 메시지 업데이트
+                    if (statusMessage) {
+                        statusMessage.innerHTML = `
+                            <div style="font-weight: bold; color: #2196f3; margin-bottom: 4px;">
+                                🔄 자동복원 진행 중 (${stepNames[currentStep]})
+                            </div>
+                            <div style="font-size: 12px; color: #ffffff;">
+                                • 단계: ${currentStep + 1}/${steps.length} | • 진행률: ${progress}%
+                            </div>
+                        `;
+                    }
+                    
+                    currentStep++;
+                } else {
+                    // 모든 단계 완료
+                    clearInterval(interval);
+                    steps[steps.length - 1].classList.remove('active');
+                    steps[steps.length - 1].classList.add('completed');
+                    const lastStatus = steps[steps.length - 1].querySelector('.step-status');
+                    if (lastStatus) lastStatus.textContent = '완료';
+                    
+                    if (statusMessage) {
+                        statusMessage.innerHTML = `
+                            <div style="font-weight: bold; color: #4caf50; margin-bottom: 4px;">
+                                ✅ 자동복원 완료 (R0-R12 → G1-G3)
+                            </div>
+                            <div style="font-size: 12px; color: #ffffff;">
+                                • 총 소요시간: 45s | • RAG 인덱스: 활성화 | • Professor G: 준비완료
+                            </div>
+                        `;
+                    }
+                }
+            }, 1000);
+        }
+        
+        // 상태 새로고침
+        function refreshRestoreStatus() {
+            console.log('복원 상태 새로고침');
+            const statusMessage = document.getElementById('restore-status-message');
+            if (statusMessage) {
+                statusMessage.innerHTML = `
+                    <div style="font-weight: bold; color: #666; margin-bottom: 4px;">
+                        ⏸️ 자동복원 대기 중 (S0-S5 → C1-C5 → A0-A2)
+                    </div>
+                    <div style="font-size: 12px; color: #ffffff;">
+                        • 상태: 대기 중 | • 다음: R0 복원 시작 대기
+                    </div>
+                `;
+            }
+        }
+        
+        // 복원 초기화
+        function resetRestore() {
+            console.log('복원 초기화');
+            const steps = document.querySelectorAll('.progress-step-horizontal');
+            const progressBar = document.getElementById('progress-bar');
+            const statusMessage = document.getElementById('restore-status-message');
+            
+            // 모든 단계 초기화
+            steps.forEach(step => {
+                step.classList.remove('active', 'completed', 'error');
+                const status = step.querySelector('.step-status');
+                if (status) status.textContent = '대기 중';
+            });
+            
+            // 진행률 초기화
+            if (progressBar) progressBar.style.width = '0%';
+            
+            // 상태 메시지 초기화
+            if (statusMessage) {
+                statusMessage.innerHTML = '자동 복원 대기 중...';
+            }
+        }
+        
+        // 릴리스 인덱스 정보 새로고침
+        function refreshIndexInfo() {
+            console.log('릴리스 인덱스 정보 새로고침');
+            // 실제로는 API 호출
+        }
+        
+        // AI 시스템 상태 새로고침
+        function refreshAISystemStatus() {
+            console.log('AI 시스템 상태 새로고침');
+            
+            // 로딩 상태 표시
+            const aiSystemStatus = document.getElementById('ai-system-status');
+            if (aiSystemStatus) {
+                aiSystemStatus.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; color: #ffffff;">
+                        <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #8b9cf7; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <div style="margin-top: 8px; font-size: 12px;">AI 시스템 상태를 새로고침하는 중...</div>
+                    </div>
+                `;
+            }
+            
+            // 2초 후 업데이트된 정보 표시
+            setTimeout(() => {
+                if (aiSystemStatus) {
+                    aiSystemStatus.innerHTML = `
+                        <div style="font-size: 11px; color: #ffffff; line-height: 1.4;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span><strong>RAG 상태:</strong></span>
+                                <span id="rag-status" style="color: #4CAF50; font-weight: bold;">활성화</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span><strong>벡터 인덱스:</strong></span>
+                                <span id="vector-count" style="color: #2196F3; font-weight: bold;">2,787개 청크</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span><strong>벡터 차원:</strong></span>
+                                <span id="vector-dim" style="color: #2196F3; font-weight: bold;">768차원</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span><strong>임베딩 모델:</strong></span>
+                                <span id="embedding-model" style="color: #2196F3; font-weight: bold;">text-embedding-3-small</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span><strong>BM25 인덱스:</strong></span>
+                                <span id="bm25-status" style="color: #4CAF50; font-weight: bold;">정상</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span><strong>AI 제공자:</strong></span>
+                                <span id="ai-providers" style="color: #FF9800; font-weight: bold;">OpenAI (gpt-4o-mini) | Gemini (gemini-2.0-flash-001)</span>
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                <button onclick="rebuildVector()" style="flex: 1; padding: 4px 8px; background: #FF9800; color: white; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">
+                                    벡터 재구축
+                                </button>
+                                <button onclick="testSearch()" style="flex: 1; padding: 4px 8px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">
+                                    검색 테스트
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, 2000);
+        }
+        
+        // 인덱스 다운로드
+        function downloadIndex() {
+            console.log('인덱스 다운로드');
+            // 실제로는 API 호출
+        }
+        
+        // 인덱스 업로드
+        function uploadIndex() {
+            console.log('인덱스 업로드');
+            // 실제로는 API 호출
+        }
+        
+        // 벡터 재구축
+        function rebuildVector() {
+            console.log('벡터 재구축');
+            // 실제로는 API 호출
+        }
+        
+        // 검색 테스트
+        function testSearch() {
+            console.log('검색 테스트');
+            // 실제로는 API 호출
+        }
+        
+        // 응답 영역 업데이트
+        function updateResponseArea() {
+            const responseArea = document.getElementById('response-area');
+            let content = '';
+            
+            if (currentMode === 'grammar') {
+                content = `
+                    <h3>문법 학습 모드 📖</h3>
+                    <p>영어 문법을 체계적으로 학습할 수 있습니다.</p>
+                    <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+                        <li>시제, 조동사, 접속사 등 문법 요소 학습</li>
+                        <li>문법 규칙과 예외사항 설명</li>
+                        <li>실제 문장을 통한 문법 연습</li>
+                    </ul>
+                `;
+            } else if (currentMode === 'sentence') {
+                content = `
+                    <h3>문장 분석 모드 🔍</h3>
+                    <p>문장의 구조와 의미를 분석합니다. (난이도: ${getDifficultyText(currentDifficulty)})</p>
+                    <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+                        <li>문장 성분 분석 (주어, 동사, 목적어 등)</li>
+                        <li>문법 구조와 의미 파악</li>
+                        <li>문장 변형과 활용 방법</li>
+                    </ul>
+                `;
+            } else if (currentMode === 'passage') {
+                content = `
+                    <h3>지문 설명 모드 📄</h3>
+                    <p>긴 지문의 내용을 자세히 설명합니다.</p>
+                    <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+                        <li>지문의 주요 내용 요약</li>
+                        <li>어려운 단어와 표현 설명</li>
+                        <li>문맥과 의미 파악</li>
+                    </ul>
+                `;
+            }
+            
+            responseArea.innerHTML = `<div class="response-content">${content}</div>`;
+        }
+        
+        // 난이도 텍스트 변환
+        function getDifficultyText(difficulty) {
+            const difficultyMap = {
+                'elementary': '초급',
+                'intermediate': '중급',
+                'advanced': '고급'
+            };
+            return difficultyMap[difficulty] || difficulty;
+        }
+        
+        // 상태 업데이트
+        function updateStatus(status) {
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = status;
+            }
+        }
+        
+        // Enter 키로 질문하기
+        document.getElementById('question-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                askQuestion();
+            }
+        });
+        
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('passwordModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+        
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('MAIC-Flask 초기화 완료');
+            showStudentMode();
+            
+            // 초기 시간 설정
+            const welcomeTime = document.getElementById('welcomeTime');
+            if (welcomeTime) {
+                welcomeTime.textContent = new Date().toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        });
+    </script>
+</body>
+</html>

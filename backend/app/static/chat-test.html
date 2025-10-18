@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAIC Flask - AI 채팅 테스트</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c, #5a5d7c);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        .chat-container {
+            background: rgba(58, 61, 92, 0.8);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+        
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+        
+        .message.user {
+            background: rgba(99, 102, 241, 0.2);
+            text-align: right;
+        }
+        
+        .message.assistant {
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            color: #e0e0e0;
+            font-size: 1rem;
+        }
+        
+        .chat-input button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .chat-input button:hover {
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .chat-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+        
+        .mode-button {
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-button.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2);
+        }
+        
+        .status {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🤖 Professor G AI 채팅 테스트</h1>
+        <p class="subtitle">AI와 대화하며 영어 학습을 시작해보세요!</p>
+        
+        <div class="chat-container">
+            <div class="mode-selector">
+                <button class="mode-button active" data-mode="grammar">문법 학습</button>
+                <button class="mode-button" data-mode="sentence">문장 분석</button>
+                <button class="mode-button" data-mode="passage">지문 설명</button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <strong>Professor G:</strong> 안녕하세요! 저는 Professor G입니다. 영어 학습을 도와드리겠습니다. 어떤 모드로 학습하고 싶으신가요?
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="메시지를 입력하세요..." onkeypress="handleKeyPress(event)">
+                <button id="sendButton" onclick="sendMessage()">전송</button>
+            </div>
+            
+            <div class="status" id="status">준비됨</div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'grammar';
+        let isLoading = false;
+
+        // 모드 선택
+        document.querySelectorAll('.mode-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.mode-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                currentMode = button.dataset.mode;
+                updateStatus(`모드 변경: ${getModeName(currentMode)}`);
+            });
+        });
+
+        function getModeName(mode) {
+            const names = {
+                'grammar': '문법 학습',
+                'sentence': '문장 분석', 
+                'passage': '지문 설명'
+            };
+            return names[mode] || mode;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isLoading) {
+                sendMessage();
+            }
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function addMessage(role, content) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const roleName = role === 'user' ? '나' : 'Professor G';
+            messageDiv.innerHTML = `<strong>${roleName}:</strong> ${content}`;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || isLoading) return;
+            
+            // 사용자 메시지 추가
+            addMessage('user', message);
+            input.value = '';
+            
+            // 로딩 상태
+            isLoading = true;
+            updateStatus('AI가 응답을 생성하고 있습니다...');
+            document.getElementById('sendButton').disabled = true;
+            
+            try {
+                const response = await fetch('/api/v1/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        mode: currentMode,
+                        stream: false
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage('assistant', data.response);
+                    updateStatus('응답 완료');
+                } else {
+                    addMessage('assistant', `오류: ${data.error || '알 수 없는 오류가 발생했습니다.'}`);
+                    updateStatus('오류 발생');
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                addMessage('assistant', `연결 오류: ${error.message}`);
+                updateStatus('연결 오류');
+            } finally {
+                isLoading = false;
+                document.getElementById('sendButton').disabled = false;
+            }
+        }
+
+        // 초기 상태 설정
+        updateStatus('Professor G와 대화할 준비가 되었습니다!');
+    </script>
+</body>
+</html>

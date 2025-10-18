@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAIC Flask - 모바일 AI 채팅</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1b23;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 100%;
+            background: #1a1b23;
+        }
+
+        /* 헤더 영역 */
+        .chat-header {
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .header-title {
+            text-align: center;
+            color: #e0e0e0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        /* 모드 선택 슬라이더 */
+        .mode-selector {
+            margin-bottom: 15px;
+        }
+
+        .mode-slider {
+            position: relative;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c);
+            border-radius: 25px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2), inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .mode-slider-track {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .mode-option {
+            flex: 1;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #a1a3c0;
+        }
+
+        .mode-option.active {
+            color: #e0e0e0;
+        }
+
+        /* 난이도 선택 슬라이더 */
+        .difficulty-selector {
+            display: none;
+        }
+
+        .difficulty-selector.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .difficulty-slider {
+            position: relative;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c);
+            border-radius: 20px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 3px;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2), inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .difficulty-slider-track {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            height: 34px;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            border-radius: 17px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .difficulty-option {
+            flex: 1;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 17px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #a1a3c0;
+        }
+
+        .difficulty-option.active {
+            color: #e0e0e0;
+        }
+
+        /* 메인 채팅 영역 */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1a1b23;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #1a1b23;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border-bottom-right-radius: 5px;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .message.assistant .message-bubble {
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 5px;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+            max-width: 80%;
+            color: #e0e0e0;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #6366f1;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        /* 입력 영역 */
+        .chat-input-container {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            resize: none;
+            min-height: 45px;
+            max-height: 100px;
+            background: linear-gradient(135deg, #3a3d5c, #4a4d6c);
+            color: #e0e0e0;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2), inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-input:focus {
+            border-color: #6366f1;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2), inset -2px -2px 4px rgba(255, 255, 255, 0.05), 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .send-button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .send-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.25), -6px -6px 12px rgba(255, 255, 255, 0.08);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 상태 표시 */
+        .status-indicator {
+            text-align: center;
+            padding: 8px;
+            background: linear-gradient(135deg, #2a2d3a, #3a3d5c);
+            color: #6366f1;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+        }
+
+        /* 애니메이션 */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* 스크롤바 스타일링 */
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            .chat-header {
+                padding: 10px 15px;
+            }
+
+            .header-title {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+
+            .mode-slider {
+                height: 45px;
+            }
+
+            .mode-option {
+                height: 35px;
+                font-size: 0.85rem;
+            }
+
+            .mode-slider-track {
+                height: 35px;
+            }
+
+            .chat-messages {
+                padding: 15px;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+
+            .chat-input-container {
+                padding: 10px 15px;
+            }
+
+            .chat-input {
+                font-size: 16px; /* iOS 줌 방지 */
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- 헤더 영역 -->
+        <div class="chat-header">
+            <div class="header-title">🤖 Professor G</div>
+            
+            <!-- 모드 선택 슬라이더 -->
+            <div class="mode-selector">
+                <div class="mode-slider">
+                    <div class="mode-slider-track" id="modeTrack"></div>
+                    <div class="mode-option active" data-mode="grammar">📖 문법</div>
+                    <div class="mode-option" data-mode="sentence">🔍 문장</div>
+                    <div class="mode-option" data-mode="passage">📄 지문</div>
+                </div>
+            </div>
+
+            <!-- 난이도 선택 슬라이더 -->
+            <div class="difficulty-selector" id="difficultySelector">
+                <div class="difficulty-slider">
+                    <div class="difficulty-slider-track" id="difficultyTrack"></div>
+                    <div class="difficulty-option active" data-difficulty="elementary">🌱 초급</div>
+                    <div class="difficulty-option" data-difficulty="intermediate">🌿 중급</div>
+                    <div class="difficulty-option" data-difficulty="advanced">🌳 고급</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 채팅 영역 -->
+        <div class="chat-main">
+            <!-- 메시지 영역 -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="message-bubble">
+                        <div>안녕하세요! 저는 Professor G입니다. 🎓</div>
+                        <div>영어 학습을 도와드리겠습니다. 어떤 모드로 학습하고 싶으신가요?</div>
+                        <div class="message-time" id="welcomeTime"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 입력 영역 -->
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        class="chat-input" 
+                        placeholder="메시지를 입력하세요..."
+                        rows="1"
+                        onkeypress="handleKeyPress(event)"
+                        oninput="autoResize(this)"
+                    ></textarea>
+                    <button id="sendButton" class="send-button" onclick="sendMessage()">
+                        전송
+                    </button>
+                </div>
+            </div>
+
+            <!-- 상태 표시 -->
+            <div class="status-indicator" id="statusIndicator">
+                준비됨 • 문법 학습 • 초급
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'grammar';
+        let currentDifficulty = 'elementary';
+        let isLoading = false;
+
+        // 초기 시간 설정
+        document.getElementById('welcomeTime').textContent = new Date().toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // 모드 선택 슬라이더
+        function initModeSlider() {
+            const modeOptions = document.querySelectorAll('.mode-option');
+            const modeTrack = document.getElementById('modeTrack');
+            
+            modeOptions.forEach((option, index) => {
+                option.addEventListener('click', () => {
+                    // 활성 상태 업데이트
+                    modeOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    // 트랙 위치 업데이트
+                    const trackWidth = 100 / modeOptions.length;
+                    modeTrack.style.width = trackWidth + '%';
+                    modeTrack.style.left = (trackWidth * index) + '%';
+                    
+                    // 모드 변경
+                    currentMode = option.dataset.mode;
+                    updateDifficultyVisibility();
+                    updateStatus();
+                });
+            });
+        }
+
+        // 난이도 선택 슬라이더
+        function initDifficultySlider() {
+            const difficultyOptions = document.querySelectorAll('.difficulty-option');
+            const difficultyTrack = document.getElementById('difficultyTrack');
+            
+            difficultyOptions.forEach((option, index) => {
+                option.addEventListener('click', () => {
+                    // 활성 상태 업데이트
+                    difficultyOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    // 트랙 위치 업데이트
+                    const trackWidth = 100 / difficultyOptions.length;
+                    difficultyTrack.style.width = trackWidth + '%';
+                    difficultyTrack.style.left = (trackWidth * index) + '%';
+                    
+                    // 난이도 변경
+                    currentDifficulty = option.dataset.difficulty;
+                    updateStatus();
+                });
+            });
+        }
+
+        // 난이도 선택기 표시/숨김
+        function updateDifficultyVisibility() {
+            const difficultySelector = document.getElementById('difficultySelector');
+            
+            if (currentMode === 'sentence') {
+                difficultySelector.classList.add('show');
+            } else {
+                difficultySelector.classList.remove('show');
+            }
+        }
+
+        function getModeName(mode) {
+            const names = {
+                'grammar': '문법 학습',
+                'sentence': '문장 분석',
+                'passage': '지문 설명'
+            };
+            return names[mode] || mode;
+        }
+
+        function getDifficultyName(difficulty) {
+            const names = {
+                'elementary': '초급',
+                'intermediate': '중급',
+                'advanced': '고급'
+            };
+            return names[difficulty] || difficulty;
+        }
+
+        function updateStatus() {
+            const statusIndicator = document.getElementById('statusIndicator');
+            let statusText = `준비됨 • ${getModeName(currentMode)}`;
+            
+            if (currentMode === 'sentence') {
+                statusText += ` • ${getDifficultyName(currentDifficulty)}`;
+            }
+            
+            statusIndicator.textContent = statusText;
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey && !isLoading) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function addMessage(role, content, timestamp = null) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const time = timestamp || new Date().toLocaleTimeString('ko-KR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div>${content}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div>Professor G가 입력 중</div>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || isLoading) return;
+            
+            // 사용자 메시지 추가
+            addMessage('user', message);
+            input.value = '';
+            autoResize(input);
+            
+            // 로딩 상태
+            isLoading = true;
+            showTypingIndicator();
+            document.getElementById('sendButton').disabled = true;
+            
+            try {
+                const response = await fetch('/api/v1/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        mode: currentMode,
+                        difficulty: currentMode === 'sentence' ? currentDifficulty : undefined,
+                        stream: false
+                    })
+                });
+                
+                const data = await response.json();
+                
+                hideTypingIndicator();
+                
+                if (data.success) {
+                    addMessage('assistant', data.response);
+                } else {
+                    addMessage('assistant', `❌ 오류: ${data.error || '알 수 없는 오류가 발생했습니다.'}`);
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                hideTypingIndicator();
+                addMessage('assistant', `🔌 연결 오류: ${error.message}`);
+            } finally {
+                isLoading = false;
+                document.getElementById('sendButton').disabled = false;
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            initModeSlider();
+            initDifficultySlider();
+            updateDifficultyVisibility();
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

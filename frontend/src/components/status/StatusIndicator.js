@@ -1,362 +1,423 @@
 /**
- * StatusIndicator - 재사용 가능한 상태 표시 컴포넌트
- * 플로팅 상태 인디케이터, 펄스 애니메이션, 실시간 상태 업데이트 제공
+ * 상태 표시기 컴포넌트
+ * Like-Opt 프론트엔드 상태 표시 컴포넌트
  */
-export class StatusIndicator {
-  constructor(containerId, options = {}) {
-    this.containerId = containerId;
-    this.options = {
-      position: 'top-right', // 'top-right', 'top-left', 'bottom-right', 'bottom-left'
-      showText: true,
-      autoHide: false,
-      hideDelay: 3000,
-      pulseAnimation: true,
+
+import { BaseComponent } from '../base/BaseComponent.js';
+
+/**
+ * 상태 표시기 컴포넌트 클래스
+ */
+export class StatusIndicator extends BaseComponent {
+  constructor(options = {}) {
+    super({
+      className: 'status-indicator',
       ...options
+    });
+    
+    this.status = options.status || 'unknown'; // online, offline, loading, error, warning, success
+    this.text = options.text || '';
+    this.icon = options.icon || '';
+    this.showIcon = options.showIcon !== false;
+    this.showText = options.showText !== false;
+    this.animated = options.animated !== false;
+    this.pulse = options.pulse || false;
+    this.size = options.size || 'medium'; // small, medium, large
+    this.variant = options.variant || 'default'; // default, minimal, detailed
+  }
+  
+  /**
+   * 상태 설정
+   */
+  setupState() {
+    this.state = {
+      status: this.status,
+      text: this.text,
+      icon: this.icon,
+      showIcon: this.showIcon,
+      showText: this.showText,
+      animated: this.animated,
+      pulse: this.pulse,
+      size: this.size,
+      variant: this.variant,
+      isVisible: true
     };
-    
-    this.currentStatus = 'unknown';
-    this.statusHistory = [];
-    this.visibilityTimer = null;
-    
-    this.init();
   }
   
   /**
-   * 상태 인디케이터 초기화
+   * 이벤트 설정
    */
-  init() {
-    this.render();
-    this.setupEventListeners();
-    this.updateStatus('ready', '준비완료');
+  setupEvents() {
+    this.events = {
+      click: (event) => this.handleClick(event),
+      ...this.events
+    };
   }
   
   /**
-   * 상태 인디케이터 HTML 렌더링
+   * 템플릿 렌더링
    */
-  render() {
-    const container = document.getElementById(this.containerId);
-    if (!container) {
-      console.error(`Container with id '${this.containerId}' not found`);
-      return;
-    }
+  renderTemplate() {
+    const { 
+      status, text, icon, showIcon, showText, animated, pulse, size, variant, isVisible 
+    } = this.state;
     
-    container.innerHTML = `
-      <div class="status-indicator-floating ${this.options.position}" id="status-indicator">
-        <div class="status-pulse" data-status="unknown"></div>
-        ${this.options.showText ? '<span class="status-text">상태 확인 중...</span>' : ''}
-        <div class="status-tooltip" id="status-tooltip">
-          <div class="tooltip-content">
-            <div class="tooltip-header">시스템 상태</div>
-            <div class="tooltip-body">
-              <div class="status-item">
-                <span class="status-label">현재 상태:</span>
-                <span class="status-value" id="tooltip-current-status">확인 중</span>
-              </div>
-              <div class="status-item">
-                <span class="status-label">마지막 업데이트:</span>
-                <span class="status-value" id="tooltip-last-update">-</span>
-              </div>
-              <div class="status-item">
-                <span class="status-label">상태 지속 시간:</span>
-                <span class="status-value" id="tooltip-duration">-</span>
-              </div>
-            </div>
+    if (!isVisible) return '';
+    
+    const statusIcon = this.getStatusIcon(status, icon);
+    const statusText = this.getStatusText(status, text);
+    const statusClass = this.getStatusClass(status, size, variant, animated, pulse);
+    
+    return `
+      <div class="status-indicator ${statusClass}" data-status="${status}">
+        ${showIcon ? `
+          <div class="status-icon ${animated ? 'animated' : ''} ${pulse ? 'pulse' : ''}">
+            ${statusIcon}
           </div>
-        </div>
+        ` : ''}
+        
+        ${showText ? `
+          <span class="status-text">${statusText}</span>
+        ` : ''}
+        
+        ${variant === 'detailed' ? this.renderDetailedStatus() : ''}
       </div>
     `;
-    
-    this.setupTooltip();
   }
   
   /**
-   * 툴팁 설정
+   * 상세 상태 렌더링
    */
-  setupTooltip() {
-    const indicator = document.getElementById('status-indicator');
-    const tooltip = document.getElementById('status-tooltip');
+  renderDetailedStatus() {
+    const { status } = this.state;
     
-    if (!indicator || !tooltip) return;
+    const details = {
+      online: { description: '연결됨', timestamp: new Date().toLocaleTimeString() },
+      offline: { description: '연결 끊김', timestamp: '마지막 연결: ' + new Date().toLocaleTimeString() },
+      loading: { description: '로딩 중...', timestamp: '' },
+      error: { description: '오류 발생', timestamp: new Date().toLocaleTimeString() },
+      warning: { description: '경고', timestamp: new Date().toLocaleTimeString() },
+      success: { description: '성공', timestamp: new Date().toLocaleTimeString() }
+    };
     
-    let tooltipTimer = null;
+    const detail = details[status] || { description: '알 수 없음', timestamp: '' };
     
-    // 마우스 오버 시 툴팁 표시
-    indicator.addEventListener('mouseenter', () => {
-      clearTimeout(tooltipTimer);
-      tooltip.style.display = 'block';
-      this.updateTooltip();
+    return `
+      <div class="status-details">
+        <div class="status-description">${detail.description}</div>
+        ${detail.timestamp ? `<div class="status-timestamp">${detail.timestamp}</div>` : ''}
+      </div>
+    `;
+  }
+  
+  /**
+   * 클릭 이벤트 처리
+   */
+  handleClick(event) {
+    event.preventDefault();
+    
+    this.emit('status:click', {
+      status: this.state.status,
+      text: this.state.text
     });
     
-    // 마우스 아웃 시 툴팁 숨김
-    indicator.addEventListener('mouseleave', () => {
-      tooltipTimer = setTimeout(() => {
-        tooltip.style.display = 'none';
-      }, 100);
-    });
+    this.showStatusDetails();
   }
   
   /**
-   * 이벤트 리스너 설정
+   * 상태 아이콘 가져오기
    */
-  setupEventListeners() {
-    // 상태 클릭 시 상세 정보 표시
-    const indicator = document.getElementById('status-indicator');
-    if (indicator) {
-      indicator.addEventListener('click', () => {
-        this.showStatusDetails();
-      });
-    }
-  }
-  
-  /**
-   * 상태 업데이트
-   */
-  updateStatus(status, message = '', details = {}) {
-    const previousStatus = this.currentStatus;
-    this.currentStatus = status;
+  getStatusIcon(status, customIcon) {
+    if (customIcon) return customIcon;
     
-    // 상태 기록에 추가
-    this.statusHistory.push({
+    const icons = {
+      online: '🟢',
+      offline: '🔴',
+      loading: '🟡',
+      error: '❌',
+      warning: '⚠️',
+      success: '✅',
+      unknown: '❓'
+    };
+    
+    return icons[status] || icons.unknown;
+  }
+  
+  /**
+   * 상태 텍스트 가져오기
+   */
+  getStatusText(status, customText) {
+    if (customText) return customText;
+    
+    const texts = {
+      online: '온라인',
+      offline: '오프라인',
+      loading: '로딩 중',
+      error: '오류',
+      warning: '경고',
+      success: '성공',
+      unknown: '알 수 없음'
+    };
+    
+    return texts[status] || texts.unknown;
+  }
+  
+  /**
+   * 상태 클래스 가져오기
+   */
+  getStatusClass(status, size, variant, animated, pulse) {
+    const classes = [
+      `status-${status}`,
+      `size-${size}`,
+      `variant-${variant}`
+    ];
+    
+    if (animated) classes.push('animated');
+    if (pulse) classes.push('pulse');
+    
+    return classes.join(' ');
+  }
+  
+  /**
+   * 상태 설정
+   */
+  setStatus(status, text = null) {
+    this.setState({ 
       status,
-      message,
-      timestamp: new Date(),
-      details
+      ...(text && { text })
     });
-    
-    // 최대 50개 기록만 유지
-    if (this.statusHistory.length > 50) {
-      this.statusHistory.shift();
-    }
-    
-    // UI 업데이트
-    this.updateStatusDisplay(status, message);
-    this.updateTooltip();
-    
-    // 상태 변경 이벤트 발생
-    this.emitStatusChange(previousStatus, status, message, details);
-    
-    // 자동 숨김 설정
-    if (this.options.autoHide && status !== 'error') {
-      this.scheduleAutoHide();
-    }
-  }
-    
-  /**
-   * 상태 표시 업데이트
-   */
-  updateStatusDisplay(status, message) {
-    const indicator = document.getElementById('status-indicator');
-    const pulse = indicator?.querySelector('.status-pulse');
-    const text = indicator?.querySelector('.status-text');
-    
-    if (!pulse) return;
-    
-    // 기존 상태 클래스 제거
-    pulse.className = 'status-pulse';
-    
-    // 새 상태 클래스 추가
-    switch (status) {
-      case 'ready':
-        pulse.classList.add('green');
-        if (text) text.textContent = message || '준비완료';
-        break;
-      case 'loading':
-        pulse.classList.add('yellow');
-        if (text) text.textContent = message || '처리중';
-        break;
-      case 'error':
-        pulse.classList.add('red');
-        if (text) text.textContent = message || '오류';
-        break;
-      case 'warning':
-        pulse.classList.add('orange');
-        if (text) text.textContent = message || '경고';
-        break;
-      case 'offline':
-        pulse.classList.add('gray');
-        if (text) text.textContent = message || '오프라인';
-        break;
-      default:
-        pulse.classList.add('gray');
-        if (text) text.textContent = message || '알 수 없음';
-    }
-    
-    // 펄스 애니메이션 설정
-    if (this.options.pulseAnimation) {
-      pulse.style.animation = `pulse 2s infinite`;
-    } else {
-      pulse.style.animation = 'none';
-    }
   }
   
   /**
-   * 툴팁 업데이트
+   * 텍스트 설정
    */
-  updateTooltip() {
-    const currentStatusEl = document.getElementById('tooltip-current-status');
-    const lastUpdateEl = document.getElementById('tooltip-last-update');
-    const durationEl = document.getElementById('tooltip-duration');
-    
-    if (!currentStatusEl || !lastUpdateEl || !durationEl) return;
-    
-    const currentRecord = this.statusHistory[this.statusHistory.length - 1];
-    if (!currentRecord) return;
-    
-    // 현재 상태 표시
-    currentStatusEl.textContent = currentRecord.message || currentRecord.status;
-    currentStatusEl.className = `status-value ${currentRecord.status}`;
-    
-    // 마지막 업데이트 시간
-    lastUpdateEl.textContent = currentRecord.timestamp.toLocaleTimeString('ko-KR');
-    
-    // 상태 지속 시간 계산
-    const now = new Date();
-    const duration = Math.floor((now - currentRecord.timestamp) / 1000);
-    durationEl.textContent = `${duration}초`;
+  setText(text) {
+    this.setState({ text });
   }
   
   /**
-   * 상태 변경 이벤트 발생
+   * 아이콘 설정
    */
-  emitStatusChange(previousStatus, newStatus, message, details) {
-    const event = new CustomEvent('statusChange', {
-      detail: {
-        previousStatus,
-        newStatus,
-        message,
-        details,
-        timestamp: new Date()
-      }
-    });
-    
-    document.dispatchEvent(event);
+  setIcon(icon) {
+    this.setState({ icon });
   }
   
   /**
-   * 자동 숨김 스케줄링
+   * 아이콘 표시 설정
    */
-  scheduleAutoHide() {
-    if (this.visibilityTimer) {
-      clearTimeout(this.visibilityTimer);
-    }
-    
-    this.visibilityTimer = setTimeout(() => {
-      this.hide();
-    }, this.options.hideDelay);
+  setShowIcon(show) {
+    this.setState({ showIcon: show });
   }
   
   /**
-   * 상태 인디케이터 표시
+   * 텍스트 표시 설정
    */
-  show() {
-    const indicator = document.getElementById('status-indicator');
-    if (indicator) {
-      indicator.style.display = 'flex';
-    }
+  setShowText(show) {
+    this.setState({ showText: show });
   }
   
   /**
-   * 상태 인디케이터 숨김
+   * 애니메이션 설정
    */
-  hide() {
-    const indicator = document.getElementById('status-indicator');
-    if (indicator) {
-      indicator.style.display = 'none';
-    }
+  setAnimated(animated) {
+    this.setState({ animated });
   }
   
   /**
-   * 상태 토글 (표시/숨김)
+   * 펄스 설정
    */
-  toggle() {
-    const indicator = document.getElementById('status-indicator');
-    if (indicator) {
-      const isVisible = indicator.style.display !== 'none';
-      indicator.style.display = isVisible ? 'none' : 'flex';
-    }
+  setPulse(pulse) {
+    this.setState({ pulse });
+  }
+  
+  /**
+   * 크기 설정
+   */
+  setSize(size) {
+    this.setState({ size });
+  }
+  
+  /**
+   * 변형 설정
+   */
+  setVariant(variant) {
+    this.setState({ variant });
+  }
+  
+  /**
+   * 표시 설정
+   */
+  setVisible(visible) {
+    this.setState({ isVisible: visible });
   }
   
   /**
    * 상태 상세 정보 표시
    */
   showStatusDetails() {
-    const details = {
-      currentStatus: this.currentStatus,
-      statusHistory: [...this.statusHistory].reverse().slice(0, 10),
-      totalChanges: this.statusHistory.length,
-      uptime: this.calculateUptime()
-    };
+    const { status, text, icon } = this.state;
     
-    // 상세 정보를 콘솔에 출력 (실제로는 모달이나 다른 UI로 표시 가능)
-    console.group('🔍 시스템 상태 상세 정보');
-    console.log('현재 상태:', this.currentStatus);
-    console.log('상태 기록:', details.statusHistory);
-    console.log('총 상태 변경:', details.totalChanges);
-    console.log('가동 시간:', details.uptime);
-    console.groupEnd();
-    
-    // 상세 정보 이벤트 발생
-    const event = new CustomEvent('statusDetailsRequested', {
-      detail: details
+    this.emit('modal:show', {
+      type: 'status-details',
+      title: '상태 정보',
+      content: `
+        <div class="status-details-modal">
+          <div class="status-header">
+            <div class="status-icon-large">${this.getStatusIcon(status, icon)}</div>
+            <div class="status-info">
+              <h3>${this.getStatusText(status, text)}</h3>
+              <p>상태: ${status}</p>
+            </div>
+          </div>
+          
+          <div class="status-meta">
+            <div class="meta-item">
+              <span class="meta-label">업데이트 시간:</span>
+              <span class="meta-value">${new Date().toLocaleString()}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">컴포넌트 ID:</span>
+              <span class="meta-value">${this.options.id}</span>
+            </div>
+          </div>
+        </div>
+      `,
+      buttons: [
+        { text: '닫기', type: 'primary', action: 'close' }
+      ]
     });
-    document.dispatchEvent(event);
   }
   
   /**
-   * 가동 시간 계산
+   * 상태 업데이트 (자동)
    */
-  calculateUptime() {
-    if (this.statusHistory.length === 0) return '0초';
+  updateStatus(newStatus, text = null) {
+    this.setStatus(newStatus, text);
     
-    const startTime = this.statusHistory[0].timestamp;
-    const now = new Date();
-    const uptimeMs = now - startTime;
-    
-    const seconds = Math.floor(uptimeMs / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    
-    if (hours > 0) {
-      return `${hours}시간 ${minutes % 60}분`;
-    } else if (minutes > 0) {
-      return `${minutes}분 ${seconds % 60}초`;
-    } else {
-      return `${seconds}초`;
+    // 특정 상태에 따른 자동 동작
+    switch (newStatus) {
+      case 'loading':
+        this.setAnimated(true);
+        this.setPulse(true);
+        break;
+      case 'error':
+        this.setAnimated(false);
+        this.setPulse(false);
+        break;
+      case 'success':
+        this.setAnimated(false);
+        this.setPulse(false);
+        // 성공 후 잠시 후 정상 상태로 변경
+        setTimeout(() => {
+          if (this.state.status === 'success') {
+            this.setStatus('online');
+          }
+        }, 2000);
+        break;
+      default:
+        this.setAnimated(false);
+        this.setPulse(false);
     }
   }
   
   /**
-   * 상태 기록 가져오기
+   * 상태 데이터 가져오기
    */
-  getStatusHistory() {
-    return [...this.statusHistory];
+  getStatusData() {
+    return {
+      status: this.state.status,
+      text: this.state.text,
+      icon: this.state.icon,
+      showIcon: this.state.showIcon,
+      showText: this.state.showText,
+      animated: this.state.animated,
+      pulse: this.state.pulse,
+      size: this.state.size,
+      variant: this.state.variant,
+      isVisible: this.state.isVisible
+    };
   }
   
   /**
-   * 현재 상태 가져오기
+   * 상태 데이터 설정
    */
-  getCurrentStatus() {
-    return this.currentStatus;
+  setStatusData(data) {
+    this.setState({
+      status: data.status || this.state.status,
+      text: data.text || this.state.text,
+      icon: data.icon || this.state.icon,
+      showIcon: data.showIcon !== undefined ? data.showIcon : this.state.showIcon,
+      showText: data.showText !== undefined ? data.showText : this.state.showText,
+      animated: data.animated !== undefined ? data.animated : this.state.animated,
+      pulse: data.pulse !== undefined ? data.pulse : this.state.pulse,
+      size: data.size || this.state.size,
+      variant: data.variant || this.state.variant,
+      isVisible: data.isVisible !== undefined ? data.isVisible : this.state.isVisible
+    });
+  }
+}
+
+// 상태 표시기 팩토리
+export class StatusIndicatorFactory {
+  static create(status, options = {}) {
+    return new StatusIndicator({
+      status,
+      ...options
+    });
   }
   
-  /**
-   * 상태 기록 초기화
-   */
-  clearHistory() {
-    this.statusHistory = [];
+  static createOnline(options = {}) {
+    return this.create('online', options);
   }
   
-  /**
-   * 컴포넌트 정리
-   */
-  destroy() {
-    if (this.visibilityTimer) {
-      clearTimeout(this.visibilityTimer);
-    }
-    
-    const indicator = document.getElementById('status-indicator');
-    if (indicator) {
-      indicator.remove();
-    }
+  static createOffline(options = {}) {
+    return this.create('offline', options);
+  }
+  
+  static createLoading(options = {}) {
+    return this.create('loading', { animated: true, pulse: true, ...options });
+  }
+  
+  static createError(options = {}) {
+    return this.create('error', options);
+  }
+  
+  static createWarning(options = {}) {
+    return this.create('warning', options);
+  }
+  
+  static createSuccess(options = {}) {
+    return this.create('success', options);
+  }
+}
+
+// 상태 표시기 매니저
+export class StatusIndicatorManager {
+  static indicators = new Map();
+  
+  static register(id, indicator) {
+    this.indicators.set(id, indicator);
+  }
+  
+  static get(id) {
+    return this.indicators.get(id);
+  }
+  
+  static getAll() {
+    return Array.from(this.indicators.values());
+  }
+  
+  static getByStatus(status) {
+    return this.getAll().filter(indicator => indicator.state.status === status);
+  }
+  
+  static updateAllStatus(status, text = null) {
+    this.getAll().forEach(indicator => {
+      indicator.updateStatus(status, text);
+    });
+  }
+  
+  static cleanup() {
+    this.indicators.clear();
   }
 }

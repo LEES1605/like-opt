@@ -324,34 +324,3 @@ export function createComponent(ComponentClass, options = {}) {
   return new ComponentClass(options);
 }
 
-/**
- * 컴포넌트 등록 시스템
- */
-export class ComponentRegistry {
-  constructor() {
-    this.components = new Map();
-  }
-  
-  register(name, ComponentClass) {
-    this.components.set(name, ComponentClass);
-  }
-  
-  get(name) {
-    return this.components.get(name);
-  }
-  
-  create(name, options = {}) {
-    const ComponentClass = this.get(name);
-    if (!ComponentClass) {
-      throw new Error(`Component "${name}" not found`);
-    }
-    return new ComponentClass(options);
-  }
-  
-  list() {
-    return Array.from(this.components.keys());
-  }
-}
-
-// 전역 컴포넌트 레지스트리
-export const componentRegistry = new ComponentRegistry();

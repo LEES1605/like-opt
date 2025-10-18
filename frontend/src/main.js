@@ -1,5 +1,5 @@
 /**
- * MAIC Flask Optimized - Demo Application
+ * Like-Opt - AI English Learning Platform
  * 재사용 가능한 컴포넌트 시스템 데모
  */
 
@@ -13,21 +13,32 @@ import {
   initializeComponents 
 } from './components/common/index.js';
 
+// 채팅 컴포넌트 임포트
+import { ChatInterface } from './components/chat/ChatInterface.js';
+
 // 유틸리티 임포트
-import { globalState, initializeState } from './utils/state.js';
+import { stateManager, StateActions, initializeState } from './store/state.js';
 import { eventBus, AppEvents, setupGlobalEventHandlers } from './utils/events.js';
 import { apiClient } from './services/api.js';
+import { chatService } from './services/chatService.js';
+import { adminService } from './services/adminService.js';
 
 /**
  * 데모 애플리케이션 클래스
  */
-class MAICDemoApp {
+class LikeOptDemoApp {
   constructor() {
     // 컴포넌트 인스턴스들
     this.components = new Map();
     
     // 앱 상태
     this.isInitialized = false;
+    this.isLoading = false;
+    
+    // 서비스 인스턴스들
+    this.apiClient = apiClient;
+    this.chatService = chatService;
+    this.adminService = adminService;
     
     // 초기화
     this.init();
@@ -38,7 +49,7 @@ class MAICDemoApp {
    */
   async init() {
     try {
-      console.log('🚀 MAIC Flask Optimized 데모 초기화 시작...');
+      console.log('🚀 Like-Opt Demo App 초기화 시작...');
       
       // 컴포넌트 시스템 초기화
       initializeComponents({
@@ -105,6 +116,9 @@ class MAICDemoApp {
     
     // 토글 스위치 데모 생성
     this.createToggleDemo();
+    
+    // 채팅 인터페이스 생성
+    this.createChatInterface();
     
     // 모달 데모 생성
     this.createModalDemo();
@@ -179,6 +193,38 @@ class MAICDemoApp {
     modeToggles.appendChild(grammarToggle.render());
     modeToggles.appendChild(sentenceToggle.render());
     modeToggles.appendChild(passageToggle.render());
+  }
+  
+  /**
+   * 채팅 인터페이스 생성
+   */
+  createChatInterface() {
+    const chatContainer = document.getElementById('chat-interface-container');
+    
+    if (!chatContainer) {
+      console.warn('채팅 인터페이스 컨테이너를 찾을 수 없습니다.');
+      return;
+    }
+    
+    // 채팅 인터페이스 생성
+    const chatInterface = new ChatInterface({
+      initialMode: 'grammar',
+      initialDifficulty: 'intermediate',
+      autoScroll: true,
+      showModeSelector: true,
+      maxMessages: 100
+    });
+    
+    // 채팅 인터페이스 렌더링
+    chatContainer.innerHTML = chatInterface.render();
+    
+    // 컴포넌트 마운트
+    chatInterface.mount(chatContainer);
+    
+    // 컴포넌트 인스턴스 저장
+    this.components.set('chatInterface', chatInterface);
+    
+    console.log('✅ 채팅 인터페이스 생성 완료');
   }
   
   /**
@@ -362,7 +408,7 @@ class MAICDemoApp {
  */
 document.addEventListener('DOMContentLoaded', () => {
   // 전역 앱 인스턴스
-  window.maicDemoApp = new MAICDemoApp();
+  window.likeOptDemoApp = new LikeOptDemoApp();
 });
 
 /**
@@ -388,4 +434,4 @@ document.getElementById('reload-button')?.addEventListener('click', () => {
 });
 
 // 기본 export
-export default MAICDemoApp;
+export default LikeOptDemoApp;

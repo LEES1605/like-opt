@@ -1,44 +1,51 @@
+/**
+ * Webpack 5 Configuration for Like-Opt Frontend
+ * 최적화된 번들링 및 개발 환경 설정
+ */
+
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const CompressionPlugin = require('compression-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
-  const isAnalyze = env.analyze === 'true';
   
   return {
-    entry: './src/index.js',
+    // 진입점
+    entry: {
+      main: './src/main.js',
+      // 코드 스플리팅을 위한 청크 분리
+      vendor: ['axios']
+    },
     
+    // 출력 설정
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: isProduction ? '[name].[contenthash].js' : '[name].js',
       chunkFilename: isProduction ? '[name].[contenthash].chunk.js' : '[name].chunk.js',
-      clean: true,
-      publicPath: '/static/',
-      // 라이브러리로도 사용 가능하도록 설정
-      library: 'MAICComponents',
-      libraryTarget: 'umd',
-      globalObject: 'this'
+      clean: true, // 빌드 전 dist 폴더 정리
+      publicPath: '/'
     },
     
+    // 모듈 해결 설정
     resolve: {
       extensions: ['.js', '.json'],
       alias: {
         '@': path.resolve(__dirname, 'src'),
         '@components': path.resolve(__dirname, 'src/components'),
+        '@services': path.resolve(__dirname, 'src/services'),
         '@styles': path.resolve(__dirname, 'src/styles'),
         '@utils': path.resolve(__dirname, 'src/utils'),
-        '@services': path.resolve(__dirname, 'src/services')
+        '@store': path.resolve(__dirname, 'src/store')
       }
     },
     
+    // 모듈 처리 규칙
     module: {
       rules: [
+        // JavaScript/ES6+ 처리
         {
           test: /\.js$/,
           exclude: /node_modules/,
@@ -54,12 +61,14 @@ module.exports = (env, argv) => {
                 }]
               ],
               plugins: [
-                '@babel/plugin-transform-runtime',
-                '@babel/plugin-syntax-dynamic-import'
+                '@babel/plugin-proposal-class-properties',
+                '@babel/plugin-proposal-optional-chaining'
               ]
             }
           }
         },
+        
+        // CSS 처리
         {
           test: /\.css$/,
           use: [
@@ -67,103 +76,55 @@ module.exports = (env, argv) => {
             {
               loader: 'css-loader',
               options: {
-                modules: false, // CSS 모듈 비활성화 (재사용성 향상)
-                sourceMap: !isProduction
+                modules: {
+                  auto: true,
+                  localIdentName: isProduction 
+                    ? '[hash:base64:8]' 
+                    : '[name]__[local]--[hash:base64:5]'
+                },
+                importLoaders: 1
               }
             },
-            {
-              loader: 'postcss-loader',
-              options: {
-                postcssOptions: {
-                  plugins: [
-                    ['autoprefixer'],
-                    ...(isProduction ? [['cssnano', { preset: 'default' }]] : [])
-                  ]
-                }
-              }
-            }
+            'postcss-loader'
           ]
         },
+        
+        // 이미지 처리
         {
-          test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
-          type: 'asset/resource',
+          test: /\.(png|jpe?g|gif|svg|webp)$/i,
+          type: 'asset',
+          parser: {
+            dataUrlCondition: {
+              maxSize: 8 * 1024 // 8KB 이하는 인라인
+            }
+          },
           generator: {
-            filename: 'images/[name].[contenthash][ext]'
+            filename: isProduction 
+              ? 'images/[name].[contenthash][ext]' 
+              : 'images/[name][ext]'
           }
         },
+        
+        // 폰트 처리
         {
-          test: /\.(woff|woff2|eot|ttf|otf)$/,
+          test: /\.(woff|woff2|eot|ttf|otf)$/i,
           type: 'asset/resource',
           generator: {
-            filename: 'fonts/[name].[contenthash][ext]'
+            filename: isProduction 
+              ? 'fonts/[name].[contenthash][ext]' 
+              : 'fonts/[name][ext]'
           }
         }
       ]
     },
     
-    optimization: {
-      minimize: isProduction,
-      minimizer: [
-        new TerserPlugin({
-          terserOptions: {
-            compress: {
-              drop_console: isProduction,
-              drop_debugger: isProduction,
-              pure_funcs: isProduction ? ['console.log', 'console.info'] : []
-            },
-            mangle: true,
-            format: {
-              comments: false
-            }
-          },
-          extractComments: false
-        })
-      ],
-      
-      // 코드 분할 최적화
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          // 외부 라이브러리
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            priority: 10,
-            reuseExistingChunk: true
-          },
-          // 공통 컴포넌트
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            priority: 5,
-            reuseExistingChunk: true,
-            test: /[\\/]src[\\/]components[\\/]common[\\/]/
-          },
-          // 스타일
-          styles: {
-            name: 'styles',
-            test: /\.css$/,
-            chunks: 'all',
-            enforce: true
-          }
-        }
-      },
-      
-      // 런타임 청크 분리
-      runtimeChunk: 'single',
-      
-      // 모듈 ID 안정화
-      moduleIds: 'deterministic'
-    },
-    
+    // 플러그인 설정
     plugins: [
-      // HTML 플러그인
+      // HTML 템플릿 처리
       new HtmlWebpackPlugin({
         template: './public/index.html',
         filename: 'index.html',
-        inject: true,
+        inject: 'body',
         minify: isProduction ? {
           removeComments: true,
           collapseWhitespace: true,
@@ -178,45 +139,56 @@ module.exports = (env, argv) => {
         } : false
       }),
       
-      // CSS 추출
-      new MiniCssExtractPlugin({
-        filename: isProduction ? '[name].[contenthash].css' : '[name].css',
-        chunkFilename: isProduction ? '[name].[contenthash].chunk.css' : '[name].chunk.css'
-      }),
-      
-      // 정적 파일 복사
-      new CopyPlugin({
-        patterns: [
-          {
-            from: 'public/static',
-            to: 'static',
-            noErrorOnMissing: true
-          },
-          {
-            from: 'public/favicon.ico',
-            to: 'favicon.ico',
-            noErrorOnMissing: true
-          }
-        ]
-      }),
-      
-      // 빌드 전 정리
-      new CleanWebpackPlugin(),
-      
-      // Gzip 압축
+      // CSS 추출 (프로덕션만)
       ...(isProduction ? [
-        new CompressionPlugin({
-          algorithm: 'gzip',
-          test: /\.(js|css|html|svg)$/,
-          threshold: 8192,
-          minRatio: 0.8,
-          filename: '[path][base].gz'
+        new MiniCssExtractPlugin({
+          filename: '[name].[contenthash].css',
+          chunkFilename: '[name].[contenthash].chunk.css'
         })
-      ] : []),
-      
-      // 번들 분석 (옵션)
-      ...(isAnalyze ? [new BundleAnalyzerPlugin()] : [])
+      ] : [])
     ],
+    
+    // 최적화 설정
+    optimization: {
+      minimize: isProduction,
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: isProduction,
+              drop_debugger: isProduction
+            },
+            mangle: isProduction
+          }
+        }),
+        new CssMinimizerPlugin()
+      ],
+      
+      // 코드 스플리팅
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            priority: 10
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 5,
+            reuseExistingChunk: true
+          }
+        }
+      },
+      
+      // 런타임 청크
+      runtimeChunk: {
+        name: 'runtime'
+      }
+    },
     
     // 개발 서버 설정
     devServer: {
@@ -226,24 +198,34 @@ module.exports = (env, argv) => {
       compress: true,
       port: 3000,
       hot: true,
-      historyApiFallback: true,
       open: true,
-      client: {
-        overlay: {
-          errors: true,
-          warnings: false
+      historyApiFallback: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false
         }
       }
     },
     
+    // 개발 도구
+    devtool: isProduction ? 'source-map' : 'eval-cheap-module-source-map',
+    
     // 성능 힌트
     performance: {
       hints: isProduction ? 'warning' : false,
-      maxEntrypointSize: 512000,
-      maxAssetSize: 512000
+      maxEntrypointSize: 512000, // 500KB
+      maxAssetSize: 512000 // 500KB
     },
     
-    // 소스맵 설정
-    devtool: isProduction ? 'source-map' : 'eval-source-map'
+    // 통계 설정
+    stats: {
+      colors: true,
+      modules: false,
+      children: false,
+      chunks: false,
+      chunkModules: false
+    }
   };
 };

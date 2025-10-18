@@ -435,7 +435,3 @@ export class ToggleManager {
 // 전역 토글 매니저
 export const toggleManager = new ToggleManager();
 
-// 컴포넌트 등록
-import { componentRegistry } from '../base/BaseComponent.js';
-componentRegistry.register('ToggleSwitch', ToggleSwitch);
-componentRegistry.register('ToggleGroup', ToggleGroup);

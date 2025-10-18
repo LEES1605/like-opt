@@ -336,7 +336,3 @@ export class ButtonGroup extends BaseComponent {
   }
 }
 
-// 컴포넌트 등록
-import { componentRegistry } from '../base/BaseComponent.js';
-componentRegistry.register('Button', Button);
-componentRegistry.register('ButtonGroup', ButtonGroup);

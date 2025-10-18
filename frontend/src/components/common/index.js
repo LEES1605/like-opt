@@ -1,121 +1,161 @@
 /**
- * 공통 컴포넌트 export
+ * 공통 컴포넌트 인덱스
+ * Like-Opt 프론트엔드 공통 컴포넌트 모음
  */
 
-// 기본 컴포넌트들
-export { Button, ButtonFactory, ButtonGroup } from './Button.js';
-export { Modal, ConfirmModal, AlertModal, LoadingModal, ModalFactory, ModalManager } from './Modal.js';
-export { ToggleSwitch, ToggleFactory } from './ToggleSwitch.js';
+// 기본 컴포넌트
+export { BaseComponent } from '../base/BaseComponent.js';
 
-// 컴포넌트 팩토리
-export class ComponentFactory {
-  /**
-   * 기본 버튼 생성
-   */
-  static primaryButton(text, options = {}) {
-    return new Button({ text, type: 'primary', ...options });
-  }
-  
-  /**
-   * 보조 버튼 생성
-   */
-  static secondaryButton(text, options = {}) {
-    return new Button({ text, type: 'secondary', ...options });
-  }
-  
-  /**
-   * 토글 스위치 생성
-   */
-  static switch(label, options = {}) {
-    return new ToggleSwitch({ label, ...options });
-  }
-  
-  /**
-   * 확인 모달 생성
-   */
-  static confirmModal(title, options = {}) {
-    return new ConfirmModal({ title, ...options });
-  }
-  
-  /**
-   * 알림 모달 생성
-   */
-  static alertModal(message, options = {}) {
-    return new AlertModal({ message, ...options });
-  }
-}
+// 공통 컴포넌트들
+export { Button, ButtonFactory, ButtonManager } from './Button.js';
+export { Modal, ModalFactory, ModalManager, ConfirmModal, AlertModal, LoadingModal } from './Modal.js';
+export { ToggleSwitch, ToggleFactory, ToggleManager, ToggleGroup } from './ToggleSwitch.js';
 
-// 컴포넌트 매니저
-export class ComponentManager {
-  constructor() {
-    this.components = new Map();
-    this.modal = new ModalManager();
-  }
+// 컴포넌트 팩토리 (편의 함수들)
+export const ComponentFactory = {
+  // 버튼 팩토리
+  primaryButton: (text, options = {}) => {
+    return ButtonFactory.create('primary', text, options);
+  },
   
-  /**
-   * 컴포넌트 등록
-   */
-  register(name, component) {
-    this.components.set(name, component);
-    return component;
-  }
+  secondaryButton: (text, options = {}) => {
+    return ButtonFactory.create('secondary', text, options);
+  },
   
-  /**
-   * 컴포넌트 조회
-   */
-  get(name) {
-    return this.components.get(name);
-  }
+  dangerButton: (text, options = {}) => {
+    return ButtonFactory.create('danger', text, options);
+  },
   
-  /**
-   * 컴포넌트 제거
-   */
-  remove(name) {
-    const component = this.components.get(name);
-    if (component && component.destroy) {
-      component.destroy();
+  // 모달 팩토리
+  alertModal: (message, options = {}) => {
+    return new AlertModal(message, options);
+  },
+  
+  confirmModal: (message, options = {}) => {
+    return new ConfirmModal(message, options);
+  },
+  
+  loadingModal: (message = '로딩 중...', options = {}) => {
+    return new LoadingModal(message, options);
+  },
+  
+  // 토글 팩토리
+  switch: (label, options = {}) => {
+    return ToggleFactory.create('switch', label, options);
+  },
+  
+  checkbox: (label, options = {}) => {
+    return ToggleFactory.create('checkbox', label, options);
+  }
+};
+
+// 컴포넌트 매니저 (전역 관리)
+export const ComponentManager = {
+  // 버튼 매니저
+  button: {
+    create: (type, text, options = {}) => {
+      return ButtonFactory.create(type, text, options);
+    },
+    
+    getById: (id) => {
+      return ButtonManager.getById(id);
+    },
+    
+    getAll: () => {
+      return ButtonManager.getAll();
+    },
+    
+    cleanup: () => {
+      return ButtonManager.cleanup();
     }
-    return this.components.delete(name);
-  }
+  },
   
-  /**
-   * 모든 컴포넌트 정리
-   */
-  cleanup() {
-    this.components.forEach(component => {
-      if (component.destroy) {
-        component.destroy();
+  // 모달 매니저
+  modal: {
+    create: (type, content, options = {}) => {
+      return ModalFactory.create(type, content, options);
+    },
+    
+    show: (modal) => {
+      if (modal && typeof modal.show === 'function') {
+        modal.show();
       }
-    });
-    this.components.clear();
-    this.modal.removeAll();
+    },
+    
+    hide: (modal) => {
+      if (modal && typeof modal.hide === 'function') {
+        modal.hide();
+      }
+    },
+    
+    hideAll: () => {
+      return ModalManager.hideAll();
+    },
+    
+    getActive: () => {
+      return ModalManager.getActive();
+    }
+  },
+  
+  // 토글 매니저
+  toggle: {
+    create: (type, label, options = {}) => {
+      return ToggleFactory.create(type, label, options);
+    },
+    
+    getById: (id) => {
+      return ToggleManager.getById(id);
+    },
+    
+    getAll: () => {
+      return ToggleManager.getAll();
+    },
+    
+    cleanup: () => {
+      return ToggleManager.cleanup();
+    }
+  },
+  
+  // 전체 정리
+  cleanup: () => {
+    ButtonManager.cleanup();
+    ModalManager.hideAll();
+    ToggleManager.cleanup();
   }
-}
-
-// 전역 컴포넌트 매니저
-export const componentManager = new ComponentManager();
+};
 
 // 컴포넌트 초기화 함수
 export function initializeComponents(options = {}) {
-  // 기본 설정
-  const defaults = {
+  console.log('🔧 컴포넌트 시스템 초기화...');
+  
+  const defaultOptions = {
     theme: 'dark',
     locale: 'ko',
     animations: {
       enabled: true,
       duration: 300
-    }
+    },
+    ...options
   };
   
-  const config = { ...defaults, ...options };
-  
-  // 테마 적용
-  document.body.className = `theme-${config.theme}`;
-  
-  // 애니메이션 설정
-  if (!config.animations.enabled) {
-    document.body.classList.add('no-animations');
+  // 전역 컴포넌트 옵션 설정
+  if (typeof window !== 'undefined') {
+    window.ComponentOptions = defaultOptions;
   }
   
-  console.log('✅ 컴포넌트 시스템 초기화 완료:', config);
+  // CSS 변수 설정
+  if (typeof document !== 'undefined') {
+    const root = document.documentElement;
+    root.style.setProperty('--component-theme', defaultOptions.theme);
+    root.style.setProperty('--animation-duration', `${defaultOptions.animations.duration}ms`);
+  }
+  
+  console.log('✅ 컴포넌트 시스템 초기화 완료', defaultOptions);
 }
+
+// 기본 export
+export default {
+  ComponentFactory,
+  ComponentManager,
+  initializeComponents
+};

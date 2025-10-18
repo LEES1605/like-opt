@@ -1,0 +1,444 @@
+/* 백업 관리 컴포넌트 스타일 */
+
+.backup-management-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.backup-management-container h2 {
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* 백업 통계 */
+.backup-stats {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+}
+
+.backup-stats h3 {
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--neumorphism-shadow);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+/* 백업 생성 */
+.backup-create {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+}
+
+.backup-create h3 {
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.create-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.neumorphism-select,
+.neumorphism-input {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  box-shadow: var(--neumorphism-shadow);
+  transition: all 0.3s ease;
+}
+
+.neumorphism-select:focus,
+.neumorphism-input:focus {
+  outline: none;
+  box-shadow: var(--neumorphism-shadow-inset);
+}
+
+.neumorphism-checkbox {
+  margin-right: 0.5rem;
+  transform: scale(1.2);
+}
+
+/* 백업 목록 */
+.backup-list {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.list-header h3 {
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.list-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.backup-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.backup-item {
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.backup-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neumorphism-shadow-hover);
+}
+
+.backup-item.selected {
+  border: 2px solid var(--primary-color);
+  box-shadow: var(--neumorphism-shadow-hover);
+}
+
+.backup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.backup-info h4 {
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.backup-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.backup-type {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.backup-type.full {
+  background: var(--success-color);
+  color: white;
+}
+
+.backup-type.incremental {
+  background: var(--info-color);
+  color: white;
+}
+
+.backup-size,
+.backup-date {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.backup-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.created {
+  background: var(--success-color);
+  color: white;
+}
+
+.status-badge.uploaded {
+  background: var(--info-color);
+  color: white;
+}
+
+.status-badge.failed {
+  background: var(--error-color);
+  color: white;
+}
+
+.github-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--neumorphism-shadow);
+}
+
+.action-btn.primary-sm {
+  background: var(--primary-color);
+  color: white;
+}
+
+.action-btn.secondary-sm {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.action-btn.danger-sm {
+  background: var(--error-color);
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--neumorphism-shadow-hover);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* GitHub Release */
+.github-releases {
+  padding: 1.5rem;
+}
+
+.releases-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.releases-header h3 {
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.releases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.release-item {
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.release-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neumorphism-shadow-hover);
+}
+
+.release-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.release-header h4 {
+  color: var(--text-color);
+  margin: 0;
+}
+
+.release-tag {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.release-info p {
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.release-meta {
+  display: flex;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.release-assets {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.asset-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: var(--card-bg);
+  border-radius: 6px;
+  box-shadow: var(--neumorphism-shadow);
+}
+
+.asset-name {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.asset-size {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* 빈 상태 */
+.no-backups,
+.no-releases {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+  font-style: italic;
+}
+
+/* 로딩 스피너 */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--border-color);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  border-top-color: currentColor;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .backup-management-container {
+    padding: 1rem;
+  }
+  
+  .create-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .backup-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .backup-status {
+    align-items: flex-start;
+  }
+  
+  .backup-actions {
+    justify-content: flex-start;
+  }
+  
+  .release-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .asset-item {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}

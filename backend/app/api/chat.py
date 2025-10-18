@@ -10,6 +10,7 @@ from typing import Dict, Any
 from ..services.chat_service import chat_service
 from ..services.rag_service import rag_service
 from ..services.ai_service import ai_service, AIProvider
+from ..services.advanced_rag_service import get_advanced_rag_service
 
 # 채팅 API 블루프린트
 chat_bp = Blueprint('chat', __name__)
@@ -260,3 +261,145 @@ def _create_system_prompt(mode: str, difficulty: str) -> str:
     difficulty_prompt = difficulty_prompts.get(difficulty, "")
     
     return f"{base_prompt}\n\n{mode_prompt}\n{difficulty_prompt}"
+
+
+@chat_bp.route('/search/advanced', methods=['POST'])
+async def advanced_search():
+    """
+    고급 RAG 검색 API
+    
+    Request Body:
+        {
+            "query": "검색 쿼리",
+            "top_k": 10,
+            "alpha": 0.5,
+            "use_rerank": true
+        }
+    
+    Returns:
+        {
+            "success": true,
+            "results": [...],
+            "stats": {...}
+        }
+    """
+    try:
+        data = request.get_json() or {}
+        query = data.get('query', '').strip()
+        top_k = data.get('top_k', 10)
+        alpha = data.get('alpha', 0.5)
+        use_rerank = data.get('use_rerank', True)
+        
+        # 입력 검증
+        if not query:
+            return jsonify({
+                'success': False,
+                'error': '검색 쿼리가 비어있습니다.'
+            }), 400
+        
+        # 고급 RAG 서비스 가져오기
+        advanced_rag = await get_advanced_rag_service()
+        
+        # 하이브리드 검색 실행
+        results = await advanced_rag.hybrid_search(
+            query=query,
+            top_k=top_k,
+            alpha=alpha,
+            use_rerank=use_rerank
+        )
+        
+        # 결과 변환
+        search_results = []
+        for result in results:
+            search_results.append({
+                'doc_id': result.doc_id,
+                'chunk_id': result.chunk_id,
+                'score': result.score,
+                'bm25_score': result.bm25_score,
+                'vector_score': result.vector_score,
+                'text': result.text,
+                'title': result.title,
+                'source': result.source,
+                'search_type': result.search_type,
+                'metadata': result.metadata
+            })
+        
+        # 통계 정보
+        stats = await advanced_rag.get_search_stats()
+        
+        return jsonify({
+            'success': True,
+            'results': search_results,
+            'stats': stats,
+            'query': query,
+            'total_results': len(search_results)
+        })
+        
+    except Exception as e:
+        print(f"[Advanced Search] 오류: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'고급 검색 중 오류가 발생했습니다: {str(e)}'
+        }), 500
+
+
+@chat_bp.route('/search/stats', methods=['GET'])
+async def search_stats():
+    """
+    검색 통계 API
+    
+    Returns:
+        {
+            "success": true,
+            "stats": {...}
+        }
+    """
+    try:
+        # 고급 RAG 서비스 가져오기
+        advanced_rag = await get_advanced_rag_service()
+        
+        # 통계 정보
+        stats = await advanced_rag.get_search_stats()
+        
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+        
+    except Exception as e:
+        print(f"[Search Stats] 오류: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'통계 조회 중 오류가 발생했습니다: {str(e)}'
+        }), 500
+
+
+@chat_bp.route('/search/optimize', methods=['POST'])
+async def optimize_search():
+    """
+    검색 인덱스 최적화 API
+    
+    Returns:
+        {
+            "success": true,
+            "message": "인덱스 최적화가 완료되었습니다."
+        }
+    """
+    try:
+        # 고급 RAG 서비스 가져오기
+        advanced_rag = await get_advanced_rag_service()
+        
+        # 인덱스 최적화 실행
+        await advanced_rag.optimize_index()
+        
+        return jsonify({
+            'success': True,
+            'message': '인덱스 최적화가 완료되었습니다.'
+        })
+        
+    except Exception as e:
+        print(f"[Optimize Search] 오류: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'인덱스 최적화 중 오류가 발생했습니다: {str(e)}'
+        }), 500

@@ -1,299 +1,395 @@
 /**
- * RankChip - 재사용 가능한 등급 칩 컴포넌트
- * 브론즈부터 챌린지까지 7단계 등급 시스템
+ * 랭크 칩 컴포넌트
+ * Like-Opt 프론트엔드 랭킹 표시 컴포넌트
  */
-export class RankChip {
-  constructor(containerId, options = {}) {
-    this.containerId = containerId;
-    this.options = {
-      size: 'medium', // 'small', 'medium', 'large'
-      showText: false, // 텍스트 표시 여부
-      showProgress: false, // 진행률 표시 여부
-      clickable: true, // 클릭 가능 여부
+
+import { BaseComponent } from '../base/BaseComponent.js';
+
+/**
+ * 랭크 칩 컴포넌트 클래스
+ */
+export class RankChip extends BaseComponent {
+  constructor(options = {}) {
+    super({
+      className: 'rank-chip',
       ...options
-    };
+    });
     
-    this.rankLevels = {
-      sprout: { level: 1, icon: '🌱', name: '새싹', color: '#90EE90', description: '처음 시작하는 단계' },
-      leaf: { level: 2, icon: '🌿', name: '잎사귀', color: '#32CD32', description: '조금씩 자라는 단계' },
-      tree: { level: 3, icon: '🌳', name: '나무', color: '#8B4513', description: '잘 자란 단계' },
-      butterfly: { level: 4, icon: '🦋', name: '나비', color: 'linear-gradient(45deg, #FF69B4, #FF1493, #FF6347)', description: '변화하는 단계' },
-      eagle: { level: 5, icon: '🦅', name: '독수리', color: '#4169E1', description: '높이 날아오르는 단계' },
-      star: { level: 6, icon: '⭐', name: '별', color: '#FFD700', description: '빛나는 단계' },
-      rocket: { level: 7, icon: '🚀', name: '로켓', color: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)', description: '최고 높이로 날아가는 단계' }
-    };
-    
-    this.currentRank = 'sprout';
-    this.progress = 0; // 0-100
-    
-    this.init();
+    this.rank = options.rank || 1;
+    this.title = options.title || '';
+    this.subtitle = options.subtitle || '';
+    this.score = options.score || 0;
+    this.avatar = options.avatar || '';
+    this.badge = options.badge || '';
+    this.trend = options.trend || 'stable'; // up, down, stable
+    this.isCurrentUser = options.isCurrentUser || false;
+    this.category = options.category || 'overall';
   }
   
   /**
-   * 등급 칩 초기화
+   * 상태 설정
    */
-  init() {
-    this.render();
-    this.setupEventListeners();
+  setupState() {
+    this.state = {
+      rank: this.rank,
+      title: this.title,
+      subtitle: this.subtitle,
+      score: this.score,
+      avatar: this.avatar,
+      badge: this.badge,
+      trend: this.trend,
+      isCurrentUser: this.isCurrentUser,
+      category: this.category,
+      isHovered: false,
+      isSelected: false
+    };
   }
   
   /**
-   * 등급 칩 HTML 렌더링
+   * 이벤트 설정
    */
-  render() {
-    const container = document.getElementById(this.containerId);
-    if (!container) {
-      console.error(`Container with id '${this.containerId}' not found`);
-      return;
-    }
+  setupEvents() {
+    this.events = {
+      click: (event) => this.handleClick(event),
+      mouseenter: (event) => this.handleMouseEnter(event),
+      mouseleave: (event) => this.handleMouseLeave(event),
+      ...this.events
+    };
+  }
+  
+  /**
+   * 템플릿 렌더링
+   */
+  renderTemplate() {
+    const { rank, title, subtitle, score, avatar, badge, trend, isCurrentUser, isHovered, isSelected } = this.state;
     
-    const rankInfo = this.rankLevels[this.currentRank];
-    const sizeClass = `rank-chip-${this.options.size}`;
-    const clickableClass = this.options.clickable ? 'rank-chip-clickable' : '';
+    const rankClass = this.getRankClass(rank);
+    const trendIcon = this.getTrendIcon(trend);
+    const rankText = this.getRankText(rank);
     
-    container.innerHTML = `
-      <div class="rank-chip ${sizeClass} ${clickableClass}" 
-           data-rank="${this.currentRank}" 
-           data-level="${rankInfo.level}">
+    return `
+      <div class="rank-chip ${rankClass} ${isCurrentUser ? 'current-user' : ''} ${isHovered ? 'hovered' : ''} ${isSelected ? 'selected' : ''}" 
+           data-rank="${rank}" 
+           data-category="${this.category}">
         
-        <div class="rank-chip-icon" 
-             style="background: ${rankInfo.color.includes('gradient') ? rankInfo.color : `linear-gradient(135deg, ${rankInfo.color}, ${this.adjustColor(rankInfo.color, 20)}`}">
-          <span class="rank-icon">${rankInfo.icon}</span>
+        <!-- 랭크 번호 -->
+        <div class="rank-number">
+          <span class="rank-text">${rankText}</span>
+          ${trend !== 'stable' ? `<span class="trend-icon ${trend}">${trendIcon}</span>` : ''}
         </div>
         
-        ${this.options.showText ? `
-          <div class="rank-chip-text">
-            <span class="rank-name">${rankInfo.name}</span>
-            <span class="rank-level">Lv.${rankInfo.level}</span>
-          </div>
-        ` : ''}
+        <!-- 아바타 -->
+        <div class="rank-avatar">
+          ${avatar ? `<img src="${avatar}" alt="${title}" class="avatar-image">` : `<div class="avatar-placeholder">${title.charAt(0)}</div>`}
+          ${badge ? `<div class="rank-badge">${badge}</div>` : ''}
+        </div>
         
-        ${this.options.showProgress ? `
-          <div class="rank-chip-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${this.progress}%"></div>
-            </div>
-            <span class="progress-text">${this.progress}%</span>
-          </div>
-        ` : ''}
+        <!-- 사용자 정보 -->
+        <div class="rank-info">
+          <h3 class="rank-title">${title}</h3>
+          ${subtitle ? `<p class="rank-subtitle">${subtitle}</p>` : ''}
+        </div>
         
-        <div class="rank-chip-glow" style="background: ${rankInfo.color}"></div>
+        <!-- 점수 -->
+        <div class="rank-score">
+          <span class="score-value">${this.formatScore(score)}</span>
+          <span class="score-label">점</span>
+        </div>
+        
+        <!-- 현재 사용자 표시 -->
+        ${isCurrentUser ? '<div class="current-user-indicator">나</div>' : ''}
       </div>
     `;
   }
   
   /**
-   * 이벤트 리스너 설정
+   * 클릭 이벤트 처리
    */
-  setupEventListeners() {
-    const chip = document.querySelector('.rank-chip');
-    if (!chip || !this.options.clickable) return;
+  handleClick(event) {
+    event.preventDefault();
     
-    chip.addEventListener('click', () => {
-      this.handleClick();
+    this.emit('rank:click', {
+      rank: this.state.rank,
+      title: this.state.title,
+      score: this.state.score,
+      category: this.category
     });
     
-    // 호버 효과
-    chip.addEventListener('mouseenter', () => {
-      chip.classList.add('rank-chip-hover');
+    this.showUserDetails();
+  }
+  
+  /**
+   * 마우스 진입 이벤트 처리
+   */
+  handleMouseEnter(event) {
+    this.setState({ isHovered: true });
+  }
+  
+  /**
+   * 마우스 벗어남 이벤트 처리
+   */
+  handleMouseLeave(event) {
+    this.setState({ isHovered: false });
+  }
+  
+  /**
+   * 랭크 클래스 가져오기
+   */
+  getRankClass(rank) {
+    if (rank === 1) return 'rank-first';
+    if (rank === 2) return 'rank-second';
+    if (rank === 3) return 'rank-third';
+    if (rank <= 10) return 'rank-top10';
+    if (rank <= 100) return 'rank-top100';
+    return 'rank-other';
+  }
+  
+  /**
+   * 랭크 텍스트 가져오기
+   */
+  getRankText(rank) {
+    if (rank === 1) return '1st';
+    if (rank === 2) return '2nd';
+    if (rank === 3) return '3rd';
+    return `${rank}th`;
+  }
+  
+  /**
+   * 트렌드 아이콘 가져오기
+   */
+  getTrendIcon(trend) {
+    const icons = {
+      up: '↗',
+      down: '↘',
+      stable: ''
+    };
+    return icons[trend] || '';
+  }
+  
+  /**
+   * 점수 포맷팅
+   */
+  formatScore(score) {
+    if (score >= 1000000) {
+      return (score / 1000000).toFixed(1) + 'M';
+    }
+    if (score >= 1000) {
+      return (score / 1000).toFixed(1) + 'K';
+    }
+    return score.toString();
+  }
+  
+  /**
+   * 랭크 설정
+   */
+  setRank(rank) {
+    this.setState({ rank });
+  }
+  
+  /**
+   * 제목 설정
+   */
+  setTitle(title) {
+    this.setState({ title });
+  }
+  
+  /**
+   * 부제목 설정
+   */
+  setSubtitle(subtitle) {
+    this.setState({ subtitle });
+  }
+  
+  /**
+   * 점수 설정
+   */
+  setScore(score) {
+    this.setState({ score });
+  }
+  
+  /**
+   * 아바타 설정
+   */
+  setAvatar(avatar) {
+    this.setState({ avatar });
+  }
+  
+  /**
+   * 배지 설정
+   */
+  setBadge(badge) {
+    this.setState({ badge });
+  }
+  
+  /**
+   * 트렌드 설정
+   */
+  setTrend(trend) {
+    this.setState({ trend });
+  }
+  
+  /**
+   * 현재 사용자 설정
+   */
+  setCurrentUser(isCurrentUser) {
+    this.setState({ isCurrentUser });
+  }
+  
+  /**
+   * 선택 상태 설정
+   */
+  setSelected(selected) {
+    this.setState({ isSelected: selected });
+  }
+  
+  /**
+   * 사용자 상세 정보 표시
+   */
+  showUserDetails() {
+    const { rank, title, subtitle, score, avatar, badge, trend, category } = this.state;
+    
+    this.emit('modal:show', {
+      type: 'user-details',
+      title: `${title} 상세 정보`,
+      content: `
+        <div class="user-details-modal">
+          <div class="user-header">
+            <div class="user-avatar-large">
+              ${avatar ? `<img src="${avatar}" alt="${title}">` : `<div class="avatar-placeholder-large">${title.charAt(0)}</div>`}
+              ${badge ? `<div class="user-badge-large">${badge}</div>` : ''}
+            </div>
+            <div class="user-info">
+              <h2>${title}</h2>
+              ${subtitle ? `<p>${subtitle}</p>` : ''}
+            </div>
+          </div>
+          
+          <div class="user-stats">
+            <div class="stat-item">
+              <span class="stat-label">랭킹</span>
+              <span class="stat-value">${this.getRankText(rank)}</span>
+              ${trend !== 'stable' ? `<span class="trend-indicator ${trend}">${this.getTrendIcon(trend)}</span>` : ''}
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">점수</span>
+              <span class="stat-value">${this.formatScore(score)}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">카테고리</span>
+              <span class="stat-value">${this.getCategoryText(category)}</span>
+            </div>
+          </div>
+        </div>
+      `,
+      buttons: [
+        { text: '닫기', type: 'primary', action: 'close' }
+      ]
     });
-    
-    chip.addEventListener('mouseleave', () => {
-      chip.classList.remove('rank-chip-hover');
-    });
   }
   
   /**
-   * 등급 설정
+   * 카테고리 텍스트 가져오기
    */
-  setRank(rank, progress = 0) {
-    if (!this.rankLevels[rank]) {
-      console.error(`Invalid rank: ${rank}`);
-      return;
-    }
-    
-    this.currentRank = rank;
-    this.progress = Math.max(0, Math.min(100, progress));
-    this.render();
-    this.setupEventListeners();
-    
-    // 등급 변경 이벤트 발생
-    this.emitRankChange(rank, progress);
-  }
-  
-  /**
-   * 다음 등급까지의 진행률 설정
-   */
-  setProgress(progress) {
-    this.progress = Math.max(0, Math.min(100, progress));
-    
-    const progressFill = document.querySelector('.progress-fill');
-    const progressText = document.querySelector('.progress-text');
-    
-    if (progressFill) {
-      progressFill.style.width = `${this.progress}%`;
-    }
-    
-    if (progressText) {
-      progressText.textContent = `${Math.round(this.progress)}%`;
-    }
-  }
-  
-  /**
-   * 등급 업그레이드
-   */
-  upgrade() {
-    const currentLevel = this.rankLevels[this.currentRank].level;
-    const nextRank = Object.keys(this.rankLevels).find(
-      rank => this.rankLevels[rank].level === currentLevel + 1
-    );
-    
-    if (nextRank) {
-      this.setRank(nextRank, 0);
-      this.showUpgradeAnimation();
-      return true;
-    }
-    
-    return false;
-  }
-  
-  /**
-   * 업그레이드 애니메이션
-   */
-  showUpgradeAnimation() {
-    const chip = document.querySelector('.rank-chip');
-    if (!chip) return;
-    
-    chip.classList.add('rank-chip-upgrade');
-    
-    setTimeout(() => {
-      chip.classList.remove('rank-chip-upgrade');
-    }, 2000);
-  }
-  
-  /**
-   * 칩 클릭 핸들러
-   */
-  handleClick() {
-    const rankInfo = this.rankLevels[this.currentRank];
-    
-    // 클릭 이벤트 발생
-    const event = new CustomEvent('rankChipClick', {
-      detail: {
-        rank: this.currentRank,
-        level: rankInfo.level,
-        name: rankInfo.name,
-        progress: this.progress
-      }
-    });
-    
-    document.dispatchEvent(event);
-    
-    // 상세 정보 표시
-    this.showRankDetails();
-  }
-  
-  /**
-   * 등급 상세 정보 표시
-   */
-  showRankDetails() {
-    const rankInfo = this.rankLevels[this.currentRank];
-    const nextRank = this.getNextRank();
-    
-    const details = {
-      current: {
-        rank: this.currentRank,
-        level: rankInfo.level,
-        name: rankInfo.name,
-        icon: rankInfo.icon
-      },
-      next: nextRank,
-      progress: this.progress
+  getCategoryText(category) {
+    const categoryMap = {
+      overall: '전체',
+      grammar: '문법',
+      sentence: '문장분석',
+      passage: '지문설명',
+      weekly: '주간',
+      monthly: '월간'
     };
     
-    // 콘솔에 상세 정보 출력
-    console.group('🏆 등급 정보');
-    console.log('현재 등급:', details.current);
-    console.log('다음 등급:', details.next);
-    console.log('진행률:', `${details.progress}%`);
-    console.groupEnd();
-    
-    // 상세 정보 이벤트 발생
-    const event = new CustomEvent('rankDetailsRequested', {
-      detail: details
-    });
-    document.dispatchEvent(event);
+    return categoryMap[category] || '전체';
   }
   
   /**
-   * 다음 등급 정보 가져오기
+   * 랭크 데이터 가져오기
    */
-  getNextRank() {
-    const currentLevel = this.rankLevels[this.currentRank].level;
-    const nextRank = Object.keys(this.rankLevels).find(
-      rank => this.rankLevels[rank].level === currentLevel + 1
-    );
-    
-    return nextRank ? this.rankLevels[nextRank] : null;
-  }
-  
-  /**
-   * 등급 변경 이벤트 발생
-   */
-  emitRankChange(rank, progress) {
-    const event = new CustomEvent('rankChange', {
-      detail: {
-        rank,
-        level: this.rankLevels[rank].level,
-        name: this.rankLevels[rank].name,
-        progress,
-        timestamp: new Date()
-      }
-    });
-    
-    document.dispatchEvent(event);
-  }
-  
-  /**
-   * 색상 조정 (밝기 변경)
-   */
-  adjustColor(color, amount) {
-    // 간단한 색상 밝기 조정
-    const hex = color.replace('#', '');
-    const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
-    const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
-    const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
-    
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-  }
-  
-  /**
-   * 현재 등급 정보 가져오기
-   */
-  getCurrentRank() {
+  getRankData() {
     return {
-      rank: this.currentRank,
-      level: this.rankLevels[this.currentRank].level,
-      name: this.rankLevels[this.currentRank].name,
-      icon: this.rankLevels[this.currentRank].icon,
-      progress: this.progress
+      rank: this.state.rank,
+      title: this.state.title,
+      subtitle: this.state.subtitle,
+      score: this.state.score,
+      avatar: this.state.avatar,
+      badge: this.state.badge,
+      trend: this.state.trend,
+      isCurrentUser: this.state.isCurrentUser,
+      category: this.category
     };
   }
   
   /**
-   * 모든 등급 정보 가져오기
+   * 랭크 데이터 설정
    */
-  getAllRanks() {
-    return { ...this.rankLevels };
+  setRankData(data) {
+    this.setState({
+      rank: data.rank || this.state.rank,
+      title: data.title || this.state.title,
+      subtitle: data.subtitle || this.state.subtitle,
+      score: data.score !== undefined ? data.score : this.state.score,
+      avatar: data.avatar || this.state.avatar,
+      badge: data.badge || this.state.badge,
+      trend: data.trend || this.state.trend,
+      isCurrentUser: data.isCurrentUser !== undefined ? data.isCurrentUser : this.state.isCurrentUser,
+      category: data.category || this.category
+    });
+  }
+}
+
+// 랭크 칩 팩토리
+export class RankChipFactory {
+  static create(data = {}) {
+    return new RankChip(data);
   }
   
-  /**
-   * 컴포넌트 정리
-   */
-  destroy() {
-    const chip = document.querySelector('.rank-chip');
-    if (chip) {
-      chip.remove();
-    }
+  static createTopRank(rank, data = {}) {
+    return new RankChip({
+      rank,
+      ...data
+    });
+  }
+  
+  static createCurrentUser(data = {}) {
+    return new RankChip({
+      isCurrentUser: true,
+      ...data
+    });
+  }
+}
+
+// 랭크 칩 매니저
+export class RankChipManager {
+  static chips = new Map();
+  
+  static register(id, chip) {
+    this.chips.set(id, chip);
+  }
+  
+  static get(id) {
+    return this.chips.get(id);
+  }
+  
+  static getAll() {
+    return Array.from(this.chips.values());
+  }
+  
+  static getByCategory(category) {
+    return this.getAll().filter(chip => chip.category === category);
+  }
+  
+  static getTopRanks(limit = 10) {
+    return this.getAll()
+      .sort((a, b) => a.state.rank - b.state.rank)
+      .slice(0, limit);
+  }
+  
+  static getCurrentUser() {
+    return this.getAll().find(chip => chip.state.isCurrentUser);
+  }
+  
+  static cleanup() {
+    this.chips.clear();
   }
 }

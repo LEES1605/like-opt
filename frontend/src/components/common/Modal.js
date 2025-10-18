@@ -477,9 +477,3 @@ export class ModalManager {
 // 전역 모달 매니저
 export const modalManager = new ModalManager();
 
-// 컴포넌트 등록
-import { componentRegistry } from '../base/BaseComponent.js';
-componentRegistry.register('Modal', Modal);
-componentRegistry.register('ConfirmModal', ConfirmModal);
-componentRegistry.register('AlertModal', AlertModal);
-componentRegistry.register('LoadingModal', LoadingModal);

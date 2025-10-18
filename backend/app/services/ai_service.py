@@ -1,233 +1,246 @@
 """
-Like-Opt - AI Service
-
-AI 통합 서비스 (OpenAI, Google Gemini)
+AI 클라이언트 모듈
+OpenAI 및 Google AI 연동 담당
 """
 
 import os
-from typing import Dict, Any, Optional, List, Iterator
+from typing import List, Dict, Any, Optional
 from enum import Enum
+import openai
+import google.generativeai as genai
+from datetime import datetime
+import json
 
-
-class AIProvider(str, Enum):
-    """AI 제공자 열거형"""
-    OPENAI = "openai"
-    GEMINI = "gemini"
-
-
-class AIService:
-    """AI 통합 서비스 클래스"""
+class AIClient:
+    """AI 클라이언트 클래스"""
     
     def __init__(self):
         self.openai_client = None
-        self.gemini_client = None
-        self._initialize_clients()
+        self.google_client = None
+        self.current_provider = "google"  # 기본값: Gemini
+        self.initialize_clients()
     
-    def _initialize_clients(self):
+    def initialize_clients(self) -> None:
         """AI 클라이언트 초기화"""
-        try:
-            # OpenAI 클라이언트 초기화
-            openai_api_key = os.getenv('OPENAI_API_KEY')
-            if openai_api_key:
-                import openai
-                self.openai_client = openai.OpenAI(api_key=openai_api_key)
-                print("[AI] OpenAI client initialized successfully")
-            else:
-                print("[AI] OpenAI API key not configured")
-            
-            # Google Gemini 클라이언트 초기화
-            gemini_api_key = os.getenv('GEMINI_API_KEY')
-            if gemini_api_key:
-                import google.generativeai as genai
-                genai.configure(api_key=gemini_api_key)
-                self.gemini_client = genai.GenerativeModel('gemini-1.5-flash')
-                print("[AI] Google Gemini client initialized successfully")
-            else:
-                print("[AI] Google Gemini API key not configured")
-                
-        except Exception as e:
-            print(f"[AI] Client initialization failed: {e}")
+        # 환경 변수에서 직접 가져오기 (Like-Opt용)
+        import os
+        
+        # OpenAI 클라이언트 초기화
+        openai_api_key = os.getenv('OPENAI_API_KEY')
+        if openai_api_key:
+            self.openai_client = openai.OpenAI(api_key=openai_api_key)
+            print("[AI] OpenAI client initialized successfully")
+        else:
+            print("[AI] OpenAI API key not configured")
+        
+        # Google AI 클라이언트 초기화
+        google_api_key = os.getenv('GEMINI_API_KEY')
+        if google_api_key:
+            genai.configure(api_key=google_api_key)
+            self.google_client = genai.GenerativeModel('gemini-pro')
+            print("[AI] Google Gemini client initialized successfully")
+        else:
+            print("[AI] Google Gemini API key not configured")
     
-    def generate_response(
-        self, 
-        messages: List[Dict[str, str]], 
-        provider: str = "openai",
-        temperature: float = 0.7,
-        max_tokens: Optional[int] = None
-    ) -> str:
+    def set_provider(self, provider: str) -> None:
+        """
+        AI 제공자 설정
+        
+        Args:
+            provider (str): 'openai' 또는 'gemini'
+        """
+        if provider in ['openai', 'gemini']:
+            # gemini를 google로 변환 (내부적으로 google 사용)
+            internal_provider = 'google' if provider == 'gemini' else provider
+            self.current_provider = internal_provider
+            # 세션에 저장 (Flask session 사용)
+            from flask import session
+            session['ai_provider'] = provider
+    
+    def get_provider(self) -> str:
+        """현재 AI 제공자 반환"""
+        from flask import session
+        return session.get('ai_provider', 'gemini')  # 기본값: gemini
+    
+    def generate_response(self, messages: List[Dict[str, str]], user_mode: str = "student") -> str:
         """
         AI 응답 생성
         
         Args:
-            messages: 대화 메시지 리스트
-            provider: AI 제공자 ('openai' 또는 'gemini')
-            temperature: 창의성 수준 (0.0-2.0)
-            max_tokens: 최대 토큰 수
+            messages (List[Dict[str, str]]): 대화 메시지들
+            user_mode (str): 사용자 모드 ('student' 또는 'teacher')
             
         Returns:
             str: AI 응답
         """
+        provider = self.get_provider()
+        
         try:
-            if provider == AIProvider.OPENAI and self.openai_client:
-                return self._generate_openai_response(messages, temperature, max_tokens)
-            elif provider == AIProvider.GEMINI and self.gemini_client:
-                return self._generate_gemini_response(messages, temperature, max_tokens)
+            if provider == "openai" and self.openai_client:
+                return self._generate_openai_response(messages, user_mode)
+            elif provider == "google" and self.google_client:
+                return self._generate_google_response(messages, user_mode)
             else:
-                return "죄송합니다. AI 서비스를 사용할 수 없습니다."
-                
+                return "AI 서비스가 설정되지 않았습니다. API 키를 확인해주세요."
         except Exception as e:
-            print(f"[AI] 응답 생성 실패: {e}")
-            return f"오류가 발생했습니다: {str(e)}"
+            return f"AI 응답 생성 중 오류가 발생했습니다: {str(e)}"
     
-    def _generate_openai_response(
-        self, 
-        messages: List[Dict[str, str]], 
-        temperature: float,
-        max_tokens: Optional[int]
-    ) -> str:
-        """OpenAI 응답 생성"""
-        try:
-            response = self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens or 1000
-            )
-            
-            return response.choices[0].message.content
-            
-        except Exception as e:
-            print(f"[AI] OpenAI 응답 생성 실패: {e}")
-            raise
+    def _generate_openai_response(self, messages: List[Dict[str, str]], user_mode: str) -> str:
+        """OpenAI API를 통한 응답 생성"""
+        # 시스템 프롬프트 설정
+        system_prompt = self._get_system_prompt(user_mode)
+        
+        # 메시지에 시스템 프롬프트 추가
+        formatted_messages = [{"role": "system", "content": system_prompt}] + messages
+        
+        response = self.openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=formatted_messages,
+            max_tokens=1000,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message.content
     
-    def _generate_gemini_response(
-        self, 
-        messages: List[Dict[str, str]], 
-        temperature: float,
-        max_tokens: Optional[int]
-    ) -> str:
-        """Google Gemini 응답 생성"""
-        try:
-            # Gemini는 시스템 메시지를 지원하지 않으므로 첫 번째 사용자 메시지에 병합
-            if messages and messages[0].get('role') == 'system':
-                system_msg = messages[0]['content']
-                user_msg = messages[1]['content'] if len(messages) > 1 else ""
-                prompt = f"{system_msg}\n\n{user_msg}"
-            else:
-                prompt = messages[-1]['content'] if messages else ""
-            
-            response = self.gemini_client.generate_content(
-                prompt,
-                generation_config={
-                    'temperature': temperature,
-                    'max_output_tokens': max_tokens or 1000
-                }
-            )
-            
-            return response.text
-            
-        except Exception as e:
-            print(f"[AI] Gemini 응답 생성 실패: {e}")
-            raise
+    def _generate_google_response(self, messages: List[Dict[str, str]], user_mode: str) -> str:
+        """Google AI를 통한 응답 생성"""
+        # 시스템 프롬프트 설정
+        system_prompt = self._get_system_prompt(user_mode)
+        
+        # 대화 내용을 하나의 텍스트로 결합
+        conversation_text = ""
+        for msg in messages:
+            role = "학생" if msg["role"] == "user" else "AI 선생님"
+            conversation_text += f"{role}: {msg['content']}\n"
+        
+        # 전체 프롬프트 구성
+        full_prompt = f"{system_prompt}\n\n대화 내용:\n{conversation_text}\nAI 선생님:"
+        
+        response = self.google_client.generate_content(full_prompt)
+        return response.text
     
-    def stream_response(
-        self, 
-        messages: List[Dict[str, str]], 
-        provider: str = "openai",
-        temperature: float = 0.7
-    ) -> Iterator[str]:
+    def _get_system_prompt(self, user_mode: str) -> str:
         """
-        AI 응답 스트리밍
+        사용자 모드에 따른 시스템 프롬프트 반환
         
         Args:
-            messages: 대화 메시지 리스트
-            provider: AI 제공자
-            temperature: 창의성 수준
+            user_mode (str): 사용자 모드
             
-        Yields:
-            str: 스트리밍 응답 청크
+        Returns:
+            str: 시스템 프롬프트
         """
-        try:
-            if provider == AIProvider.OPENAI and self.openai_client:
-                yield from self._stream_openai_response(messages, temperature)
-            elif provider == AIProvider.GEMINI and self.gemini_client:
-                yield from self._stream_gemini_response(messages, temperature)
-            else:
-                yield "죄송합니다. AI 서비스를 사용할 수 없습니다."
-                
-        except Exception as e:
-            print(f"[AI] 스트리밍 응답 실패: {e}")
-            yield f"오류가 발생했습니다: {str(e)}"
-    
-    def _stream_openai_response(
-        self, 
-        messages: List[Dict[str, str]], 
-        temperature: float
-    ) -> Iterator[str]:
-        """OpenAI 스트리밍 응답"""
-        try:
-            response = self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=messages,
-                temperature=temperature,
-                stream=True
-            )
+        if user_mode == "teacher":
+            return """당신은 MAIC(My AI Teacher)의 AI 선생님입니다. 
+            선생님 모드에서는 교육자로서 다음 역할을 수행합니다:
+            - 학생의 질문에 교육적으로 답변
+            - 학습 내용을 체계적으로 설명
+            - 예시와 비유를 활용한 설명
+            - 학습 동기 부여 및 격려
+            - 교육 과정에서의 가이드 역할
             
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
-                    
-        except Exception as e:
-            print(f"[AI] OpenAI 스트리밍 실패: {e}")
-            raise
-    
-    def _stream_gemini_response(
-        self, 
-        messages: List[Dict[str, str]], 
-        temperature: float
-    ) -> Iterator[str]:
-        """Google Gemini 스트리밍 응답"""
-        try:
-            # Gemini는 스트리밍을 지원하지 않으므로 일반 응답을 청크로 분할
-            response = self._generate_gemini_response(messages, temperature, None)
+            항상 친근하고 이해하기 쉽게 설명해주세요."""
+        
+        else:  # student mode
+            return """당신은 MAIC(My AI Teacher)의 AI 선생님입니다. 
+            학생 모드에서는 다음 역할을 수행합니다:
+            - 학생의 학습을 돕는 개인 튜터
+            - 궁금한 것을 자유롭게 질문할 수 있는 환경 제공
+            - 학습 내용을 단계별로 설명
+            - 실수와 질문을 격려하고 도움
+            - 학습 흥미와 동기 유지
             
-            # 간단한 청크 분할 (단어 단위)
-            words = response.split()
-            for word in words:
-                yield word + " "
-                
-        except Exception as e:
-            print(f"[AI] Gemini 스트리밍 실패: {e}")
-            raise
+            항상 친근하고 격려하는 말투로 답변해주세요."""
     
     def get_available_providers(self) -> List[str]:
-        """
-        사용 가능한 AI 제공자 목록
-        
-        Returns:
-            List[str]: 사용 가능한 제공자 목록
-        """
+        """사용 가능한 AI 제공자 목록 반환"""
         providers = []
         
         if self.openai_client:
-            providers.append(AIProvider.OPENAI.value)
+            providers.append("openai")
         
-        if self.gemini_client:
-            providers.append(AIProvider.GEMINI.value)
+        if self.google_client:
+            providers.append("google")
         
         return providers
     
-    def is_provider_available(self, provider: str) -> bool:
+    def test_connection(self, provider: str) -> Dict[str, Any]:
         """
-        특정 제공자 사용 가능 여부 확인
+        AI 제공자 연결 테스트
         
         Args:
-            provider: AI 제공자
+            provider (str): 테스트할 제공자
             
         Returns:
-            bool: 사용 가능 여부
+            Dict[str, Any]: 테스트 결과
         """
-        return provider in self.get_available_providers()
+        test_message = [{"role": "user", "content": "안녕하세요! 테스트 메시지입니다."}]
+        
+        try:
+            start_time = datetime.now()
+            response = self.generate_response(test_message)
+            end_time = datetime.now()
+            
+            return {
+                "success": True,
+                "provider": provider,
+                "response": response,
+                "response_time": (end_time - start_time).total_seconds(),
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "provider": provider,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
 
-# 전역 AI 서비스 인스턴스
+class AIProvider(Enum):
+    """AI 제공자 열거형"""
+    OPENAI = "openai"
+    GEMINI = "gemini"
+    GOOGLE = "google"  # 내부적으로 사용
+
+# AI 서비스 클래스 (AIClient를 래핑)
+class AIService:
+    """AI 서비스 클래스 - AIClient를 래핑하여 API 인터페이스 제공"""
+    
+    def __init__(self):
+        self.client = AIClient()
+    
+    def generate_response(self, messages: List[Dict[str, str]], provider: str = "gemini") -> str:
+        """AI 응답 생성"""
+        # 제공자 설정
+        self.client.set_provider(provider)
+        return self.client.generate_response(messages)
+    
+    def stream_response(self, messages: List[Dict[str, str]], provider: str = "gemini"):
+        """스트리밍 응답 생성 (현재는 단일 응답으로 처리)"""
+        response = self.generate_response(messages, provider)
+        # 단일 응답을 청크로 분할 (간단한 구현)
+        words = response.split()
+        for i in range(0, len(words), 3):  # 3개 단어씩 청크
+            chunk = " ".join(words[i:i+3])
+            if chunk:
+                yield chunk + " "
+    
+    def get_available_providers(self) -> List[str]:
+        """사용 가능한 제공자 목록"""
+        return self.client.get_available_providers()
+    
+    def test_connection(self, provider: str) -> Dict[str, Any]:
+        """연결 테스트"""
+        return self.client.test_connection(provider)
+
+# 전역 인스턴스들
+ai_client = AIClient()
 ai_service = AIService()
+
+# 모듈 레벨 헬퍼 함수들
+def get_current_provider() -> str:
+    """현재 AI 제공자 반환"""
+    return ai_client.get_provider()
+
+def set_provider(provider: str) -> None:
+    """AI 제공자 설정"""
+    ai_client.set_provider(provider)

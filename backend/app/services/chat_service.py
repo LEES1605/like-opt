@@ -1,9 +1,9 @@
 """
-MAIC Flask Optimized - Chat Service
-
-채팅 메시지 처리 및 대화 관리 담당
+채팅 서비스 모듈
+메시지 처리 및 대화 관리 담당
 """
 
+# Streamlit 의존성 제거됨
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import json
@@ -80,7 +80,7 @@ class ChatService:
             
         from flask import session
         conversation_data = session.get(self.conversation_key, [])
-        return [ChatMessage.from_dict(msg) for msg in conversation_data]
+        return [ChatMessage.from_dict(msg) if isinstance(msg, dict) else msg for msg in conversation_data]
     
     def clear_conversation(self) -> None:
         """대화 기록 초기화"""
@@ -158,8 +158,8 @@ class ChatService:
         try:
             conversation_data = data.get('conversation', [])
             messages = [ChatMessage.from_dict(msg) for msg in conversation_data]
-            from flask import session
-            session[self.conversation_key] = [msg.to_dict() for msg in messages]
+            from .session_adapter import session_adapter
+            session_adapter.set(self.conversation_key, messages)
             return True
         except Exception as e:
             print(f"대화 가져오기 실패: {e}")

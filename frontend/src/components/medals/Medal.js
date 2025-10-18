@@ -1,364 +1,407 @@
 /**
- * Medal - 재사용 가능한 메달 컴포넌트
- * 개별 메달 4개 + 마스터 메달 시스템
+ * 메달 컴포넌트
+ * Like-Opt 프론트엔드 메달 표시 컴포넌트
  */
-export class Medal {
-  constructor(containerId, options = {}) {
-    this.containerId = containerId;
-    this.options = {
-      size: 'medium', // 'small', 'medium', 'large'
-      showText: true, // 텍스트 표시 여부
-      showProgress: true, // 진행률 표시 여부
-      clickable: true, // 클릭 가능 여부
-      animated: true, // 애니메이션 활성화
+
+import { BaseComponent } from '../base/BaseComponent.js';
+
+/**
+ * 메달 컴포넌트 클래스
+ */
+export class Medal extends BaseComponent {
+  constructor(options = {}) {
+    super({
+      className: 'medal-component',
       ...options
-    };
+    });
     
-    this.medalTypes = {
-      bronze: { 
-        level: 1, 
-        icon: '🥉', 
-        name: '브론즈', 
-        color: 'linear-gradient(135deg, #CD7F32, #8B4513)',
-        description: '첫 번째 메달'
-      },
-      silver: { 
-        level: 2, 
-        icon: '🥈', 
-        name: '실버', 
-        color: 'linear-gradient(135deg, #C0C0C0, #A8A8A8)',
-        description: '두 번째 메달'
-      },
-      gold: { 
-        level: 3, 
-        icon: '🥇', 
-        name: '골드', 
-        color: 'linear-gradient(135deg, #FFD700, #FFA500)',
-        description: '세 번째 메달'
-      },
-      platinum: { 
-        level: 4, 
-        icon: '💎', 
-        name: '플래티넘', 
-        color: 'linear-gradient(135deg, #E5E4E2, #9370DB)',
-        description: '네 번째 메달'
-      },
-      master: { 
-        level: 5, 
-        icon: '🏆', 
-        name: '마스터', 
-        color: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)',
-        description: '모든 메달을 모았습니다!'
-      }
-    };
-    
-    this.currentMedal = 'bronze';
-    this.medalCount = 0; // 0-4 (개별 메달), 5 (마스터)
-    this.progress = 0; // 0-100
-    
-    this.init();
+    this.medalType = options.medalType || 'bronze';
+    this.title = options.title || '';
+    this.description = options.description || '';
+    this.icon = options.icon || '🏆';
+    this.earned = options.earned || false;
+    this.progress = options.progress || 0;
+    this.maxProgress = options.maxProgress || 100;
+    this.rarity = options.rarity || 'common';
+    this.category = options.category || 'general';
   }
   
   /**
-   * 메달 초기화
+   * 상태 설정
    */
-  init() {
-    this.render();
-    this.setupEventListeners();
+  setupState() {
+    this.state = {
+      medalType: this.medalType,
+      title: this.title,
+      description: this.description,
+      icon: this.icon,
+      earned: this.earned,
+      progress: this.progress,
+      maxProgress: this.maxProgress,
+      rarity: this.rarity,
+      category: this.category,
+      isHovered: false,
+      isSelected: false
+    };
   }
   
   /**
-   * 메달 HTML 렌더링
+   * 이벤트 설정
    */
-  render() {
-    const container = document.getElementById(this.containerId);
-    if (!container) {
-      console.error(`Container with id '${this.containerId}' not found`);
-      return;
-    }
+  setupEvents() {
+    this.events = {
+      click: (event) => this.handleClick(event),
+      mouseenter: (event) => this.handleMouseEnter(event),
+      mouseleave: (event) => this.handleMouseLeave(event),
+      ...this.events
+    };
+  }
+  
+  /**
+   * 템플릿 렌더링
+   */
+  renderTemplate() {
+    const { medalType, title, description, icon, earned, progress, maxProgress, rarity, isHovered, isSelected } = this.state;
     
-    const medalInfo = this.getMedalInfo();
-    const sizeClass = `medal-${this.options.size}`;
-    const clickableClass = this.options.clickable ? 'medal-clickable' : '';
-    const animatedClass = this.options.animated ? 'medal-animated' : '';
+    const progressPercent = Math.min((progress / maxProgress) * 100, 100);
+    const isCompleted = progress >= maxProgress;
     
-    container.innerHTML = `
-      <div class="medal-container ${sizeClass} ${clickableClass} ${animatedClass}" 
-           data-medal="${this.currentMedal}" 
-           data-count="${this.medalCount}">
+    return `
+      <div class="medal ${medalType} ${rarity} ${earned ? 'earned' : 'locked'} ${isHovered ? 'hovered' : ''} ${isSelected ? 'selected' : ''}" 
+           data-medal-type="${medalType}" 
+           data-rarity="${rarity}"
+           data-category="${this.category}">
         
-        <div class="medal-icon" style="background: ${medalInfo.color}">
-          <span class="medal-symbol">${medalInfo.icon}</span>
-          ${this.medalCount < 5 ? `
-            <span class="medal-number">${this.medalCount}</span>
+        <!-- 메달 아이콘 -->
+        <div class="medal-icon">
+          <div class="medal-icon-inner">
+            ${icon}
+          </div>
+          ${!earned ? '<div class="medal-lock">🔒</div>' : ''}
+        </div>
+        
+        <!-- 메달 정보 -->
+        <div class="medal-info">
+          <h3 class="medal-title">${title}</h3>
+          <p class="medal-description">${description}</p>
+          
+          <!-- 진행률 표시 -->
+          ${!earned ? `
+            <div class="medal-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${progressPercent}%"></div>
+              </div>
+              <span class="progress-text">${progress}/${maxProgress}</span>
+            </div>
+          ` : ''}
+          
+          <!-- 획득 상태 -->
+          ${earned ? `
+            <div class="medal-earned">
+              <span class="earned-badge">획득됨</span>
+              <span class="earned-date">${this.formatDate(new Date())}</span>
+            </div>
           ` : ''}
         </div>
         
-        ${this.options.showText ? `
-          <div class="medal-text">
-            <span class="medal-name">${medalInfo.name}</span>
-            <span class="medal-description">${medalInfo.description}</span>
-          </div>
-        ` : ''}
-        
-        ${this.options.showProgress && this.medalCount < 5 ? `
-          <div class="medal-progress">
-            <div class="progress-ring">
-              <svg class="progress-svg" viewBox="0 0 36 36">
-                <path class="progress-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                <path class="progress-fill" 
-                      stroke-dasharray="${this.progress}, 100" 
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-              </svg>
-              <span class="progress-text">${Math.round(this.progress)}%</span>
-            </div>
-          </div>
-        ` : ''}
-        
-        <div class="medal-glow" style="background: ${medalInfo.color}"></div>
-        <div class="medal-sparkles"></div>
+        <!-- 희귀도 표시 -->
+        <div class="medal-rarity ${rarity}">
+          <span class="rarity-text">${this.getRarityText(rarity)}</span>
+        </div>
       </div>
     `;
   }
   
   /**
-   * 현재 메달 정보 가져오기
+   * 클릭 이벤트 처리
    */
-  getMedalInfo() {
-    if (this.medalCount >= 5) {
-      return this.medalTypes.master;
-    }
+  handleClick(event) {
+    event.preventDefault();
     
-    const medalKeys = ['bronze', 'silver', 'gold', 'platinum'];
-    const medalIndex = Math.min(this.medalCount, 3);
-    const medalKey = medalKeys[medalIndex];
-    
-    return this.medalTypes[medalKey];
-  }
-  
-  /**
-   * 이벤트 리스너 설정
-   */
-  setupEventListeners() {
-    const medal = document.querySelector('.medal-container');
-    if (!medal || !this.options.clickable) return;
-    
-    medal.addEventListener('click', () => {
-      this.handleClick();
-    });
-    
-    // 호버 효과
-    medal.addEventListener('mouseenter', () => {
-      medal.classList.add('medal-hover');
-    });
-    
-    medal.addEventListener('mouseleave', () => {
-      medal.classList.remove('medal-hover');
-    });
-  }
-  
-  /**
-   * 메달 개수 설정
-   */
-  setMedalCount(count, progress = 0) {
-    this.medalCount = Math.max(0, Math.min(5, count));
-    this.progress = Math.max(0, Math.min(100, progress));
-    
-    // 메달 타입 결정
-    if (this.medalCount >= 5) {
-      this.currentMedal = 'master';
+    if (!this.state.earned) {
+      this.showProgressModal();
     } else {
-      const medalKeys = ['bronze', 'silver', 'gold', 'platinum'];
-      this.currentMedal = medalKeys[Math.min(this.medalCount, 3)];
+      this.showMedalDetails();
     }
     
-    this.render();
-    this.setupEventListeners();
-    
-    // 메달 변경 이벤트 발생
-    this.emitMedalChange(this.medalCount, this.progress);
+    this.emit('medal:click', {
+      medalType: this.state.medalType,
+      earned: this.state.earned,
+      progress: this.state.progress
+    });
   }
   
   /**
-   * 메달 추가
+   * 마우스 진입 이벤트 처리
    */
-  addMedal() {
-    if (this.medalCount < 5) {
-      const newCount = Math.min(5, this.medalCount + 1);
-      this.setMedalCount(newCount, 0);
-      
-      if (newCount === 5) {
-        this.showMasterMedalAnimation();
-      } else {
-        this.showMedalEarnedAnimation();
-      }
-      
-      return true;
-    }
-    return false;
+  handleMouseEnter(event) {
+    this.setState({ isHovered: true });
+  }
+  
+  /**
+   * 마우스 벗어남 이벤트 처리
+   */
+  handleMouseLeave(event) {
+    this.setState({ isHovered: false });
+  }
+  
+  /**
+   * 메달 타입 설정
+   */
+  setMedalType(type) {
+    this.setState({ medalType: type });
+  }
+  
+  /**
+   * 제목 설정
+   */
+  setTitle(title) {
+    this.setState({ title });
+  }
+  
+  /**
+   * 설명 설정
+   */
+  setDescription(description) {
+    this.setState({ description });
+  }
+  
+  /**
+   * 아이콘 설정
+   */
+  setIcon(icon) {
+    this.setState({ icon });
+  }
+  
+  /**
+   * 획득 상태 설정
+   */
+  setEarned(earned) {
+    this.setState({ earned });
   }
   
   /**
    * 진행률 설정
    */
-  setProgress(progress) {
-    this.progress = Math.max(0, Math.min(100, progress));
-    
-    const progressFill = document.querySelector('.progress-fill');
-    const progressText = document.querySelector('.progress-text');
-    
-    if (progressFill) {
-      progressFill.setAttribute('stroke-dasharray', `${this.progress}, 100`);
-    }
-    
-    if (progressText) {
-      progressText.textContent = `${Math.round(this.progress)}%`;
-    }
-  }
-  
-  /**
-   * 메달 획득 애니메이션
-   */
-  showMedalEarnedAnimation() {
-    const medal = document.querySelector('.medal-container');
-    if (medal) {
-      medal.classList.add('medal-earned');
-      
-      setTimeout(() => {
-        medal.classList.remove('medal-earned');
-      }, 1500);
-    }
-  }
-  
-  /**
-   * 마스터 메달 획득 애니메이션
-   */
-  showMasterMedalAnimation() {
-    const medal = document.querySelector('.medal-container');
-    if (medal) {
-      medal.classList.add('medal-master-earned');
-      
-      setTimeout(() => {
-        medal.classList.remove('medal-master-earned');
-      }, 3000);
-    }
-  }
-  
-  /**
-   * 메달 클릭 핸들러
-   */
-  handleClick() {
-    const medalInfo = this.getMedalInfo();
-    
-    // 클릭 이벤트 발생
-    const event = new CustomEvent('medalClick', {
-      detail: {
-        medal: this.currentMedal,
-        count: this.medalCount,
-        name: medalInfo.name,
-        progress: this.progress,
-        isMaster: this.medalCount >= 5
-      }
+  setProgress(progress, maxProgress = null) {
+    this.setState({ 
+      progress,
+      ...(maxProgress && { maxProgress })
     });
+  }
+  
+  /**
+   * 희귀도 설정
+   */
+  setRarity(rarity) {
+    this.setState({ rarity });
+  }
+  
+  /**
+   * 선택 상태 설정
+   */
+  setSelected(selected) {
+    this.setState({ isSelected: selected });
+  }
+  
+  /**
+   * 진행률 모달 표시
+   */
+  showProgressModal() {
+    const { title, description, progress, maxProgress } = this.state;
     
-    document.dispatchEvent(event);
-    
-    // 상세 정보 표시
-    this.showMedalDetails();
+    this.emit('modal:show', {
+      type: 'progress',
+      title: `${title} 진행률`,
+      content: `
+        <div class="medal-progress-modal">
+          <p>${description}</p>
+          <div class="progress-details">
+            <div class="progress-bar large">
+              <div class="progress-fill" style="width: ${(progress / maxProgress) * 100}%"></div>
+            </div>
+            <p class="progress-text">${progress}/${maxProgress} 완료</p>
+          </div>
+        </div>
+      `,
+      buttons: [
+        { text: '닫기', type: 'primary', action: 'close' }
+      ]
+    });
   }
   
   /**
    * 메달 상세 정보 표시
    */
   showMedalDetails() {
-    const medalInfo = this.getMedalInfo();
+    const { title, description, icon, rarity, category } = this.state;
     
-    console.group('🏅 메달 정보');
-    console.log('현재 메달:', medalInfo.name);
-    console.log('메달 개수:', this.medalCount);
-    console.log('아이콘:', medalInfo.icon);
-    console.log('색상:', medalInfo.color);
-    console.log('설명:', medalInfo.description);
-    console.log('진행률:', `${Math.round(this.progress)}%`);
-    console.log('마스터 여부:', this.medalCount >= 5);
-    console.groupEnd();
-    
-    // 상세 정보 이벤트 발생
-    const event = new CustomEvent('medalDetailsRequested', {
-      detail: {
-        medal: this.currentMedal,
-        count: this.medalCount,
-        medalInfo,
-        progress: this.progress,
-        nextMedal: this.getNextMedal()
-      }
+    this.emit('modal:show', {
+      type: 'details',
+      title: `${title} 상세 정보`,
+      content: `
+        <div class="medal-details-modal">
+          <div class="medal-icon-large">${icon}</div>
+          <h3>${title}</h3>
+          <p>${description}</p>
+          <div class="medal-meta">
+            <span class="rarity-badge ${rarity}">${this.getRarityText(rarity)}</span>
+            <span class="category-badge">${this.getCategoryText(category)}</span>
+          </div>
+        </div>
+      `,
+      buttons: [
+        { text: '닫기', type: 'primary', action: 'close' }
+      ]
     });
-    
-    document.dispatchEvent(event);
   }
   
   /**
-   * 다음 메달 정보 가져오기
+   * 희귀도 텍스트 가져오기
    */
-  getNextMedal() {
-    if (this.medalCount >= 5) {
-      return null; // 이미 마스터
-    }
+  getRarityText(rarity) {
+    const rarityMap = {
+      common: '일반',
+      uncommon: '언커먼',
+      rare: '레어',
+      epic: '에픽',
+      legendary: '레전더리'
+    };
     
-    const nextCount = this.medalCount + 1;
-    const medalKeys = ['bronze', 'silver', 'gold', 'platinum'];
-    
-    if (nextCount >= 5) {
-      return this.medalTypes.master;
-    }
-    
-    return this.medalTypes[medalKeys[Math.min(nextCount, 3)]];
+    return rarityMap[rarity] || '일반';
   }
   
   /**
-   * 메달 변경 이벤트 발생
+   * 카테고리 텍스트 가져오기
    */
-  emitMedalChange(count, progress) {
-    const event = new CustomEvent('medalChange', {
-      detail: {
-        medal: this.currentMedal,
-        count,
-        progress,
-        isMaster: count >= 5,
-        timestamp: new Date()
-      }
+  getCategoryText(category) {
+    const categoryMap = {
+      general: '일반',
+      grammar: '문법',
+      sentence: '문장분석',
+      passage: '지문설명',
+      achievement: '업적',
+      milestone: '마일스톤'
+    };
+    
+    return categoryMap[category] || '일반';
+  }
+  
+  /**
+   * 날짜 포맷팅
+   */
+  formatDate(date) {
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
-    
-    document.dispatchEvent(event);
   }
   
   /**
-   * 현재 메달 정보 가져오기
+   * 메달 데이터 가져오기
    */
-  getCurrentMedal() {
+  getMedalData() {
     return {
-      medal: this.currentMedal,
-      count: this.medalCount,
-      progress: this.progress,
-      isMaster: this.medalCount >= 5,
-      medalInfo: this.getMedalInfo()
+      medalType: this.state.medalType,
+      title: this.state.title,
+      description: this.state.description,
+      icon: this.state.icon,
+      earned: this.state.earned,
+      progress: this.state.progress,
+      maxProgress: this.state.maxProgress,
+      rarity: this.state.rarity,
+      category: this.category
     };
   }
   
   /**
-   * 모든 메달 타입 가져오기
+   * 메달 데이터 설정
    */
-  getAllMedalTypes() {
-    return { ...this.medalTypes };
+  setMedalData(data) {
+    this.setState({
+      medalType: data.medalType || this.state.medalType,
+      title: data.title || this.state.title,
+      description: data.description || this.state.description,
+      icon: data.icon || this.state.icon,
+      earned: data.earned !== undefined ? data.earned : this.state.earned,
+      progress: data.progress !== undefined ? data.progress : this.state.progress,
+      maxProgress: data.maxProgress || this.state.maxProgress,
+      rarity: data.rarity || this.state.rarity,
+      category: data.category || this.category
+    });
+  }
+}
+
+// 메달 팩토리
+export class MedalFactory {
+  static create(type, data = {}) {
+    const medalTypes = {
+      bronze: { medalType: 'bronze', icon: '🥉', rarity: 'common' },
+      silver: { medalType: 'silver', icon: '🥈', rarity: 'uncommon' },
+      gold: { medalType: 'gold', icon: '🥇', rarity: 'rare' },
+      platinum: { medalType: 'platinum', icon: '💎', rarity: 'epic' },
+      diamond: { medalType: 'diamond', icon: '💠', rarity: 'legendary' }
+    };
+    
+    const medalData = { ...medalTypes[type], ...data };
+    return new Medal(medalData);
   }
   
-  /**
-   * 컴포넌트 정리
-   */
-  destroy() {
-    const medal = document.querySelector('.medal-container');
-    if (medal) {
-      medal.remove();
-    }
+  static createBronze(data = {}) {
+    return this.create('bronze', data);
+  }
+  
+  static createSilver(data = {}) {
+    return this.create('silver', data);
+  }
+  
+  static createGold(data = {}) {
+    return this.create('gold', data);
+  }
+  
+  static createPlatinum(data = {}) {
+    return this.create('platinum', data);
+  }
+  
+  static createDiamond(data = {}) {
+    return this.create('diamond', data);
+  }
+}
+
+// 메달 매니저
+export class MedalManager {
+  static medals = new Map();
+  
+  static register(id, medal) {
+    this.medals.set(id, medal);
+  }
+  
+  static get(id) {
+    return this.medals.get(id);
+  }
+  
+  static getAll() {
+    return Array.from(this.medals.values());
+  }
+  
+  static getByCategory(category) {
+    return this.getAll().filter(medal => medal.category === category);
+  }
+  
+  static getByRarity(rarity) {
+    return this.getAll().filter(medal => medal.state.rarity === rarity);
+  }
+  
+  static getEarned() {
+    return this.getAll().filter(medal => medal.state.earned);
+  }
+  
+  static getLocked() {
+    return this.getAll().filter(medal => !medal.state.earned);
+  }
+  
+  static cleanup() {
+    this.medals.clear();
   }
 }

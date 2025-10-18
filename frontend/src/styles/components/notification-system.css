@@ -1,0 +1,520 @@
+/**
+ * 알림 시스템 컴포넌트 스타일
+ * 실시간 푸시 알림, 토스트 메시지, 시스템 알림
+ */
+
+.notification-system {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  max-width: 400px;
+  pointer-events: none;
+}
+
+/* 알림 컨테이너 */
+.notification-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+/* 개별 알림 */
+.notification {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-neumorphism);
+  overflow: hidden;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-left: 4px solid var(--border-color);
+}
+
+.notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.notification.hide {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* 알림 타입별 스타일 */
+.notification.success {
+  border-left-color: var(--success-color);
+}
+
+.notification.error {
+  border-left-color: var(--error-color);
+}
+
+.notification.warning {
+  border-left-color: var(--warning-color);
+}
+
+.notification.info {
+  border-left-color: var(--info-color);
+}
+
+/* 알림 내용 */
+.notification-content {
+  padding: 15px;
+  color: var(--text-primary);
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.close-notification {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-notification:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.notification-message {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+.notification-time {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+/* 진행 바 */
+.notification-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--accent-primary);
+  animation: progressBar linear;
+}
+
+@keyframes progressBar {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* 알림 설정 패널 */
+.notification-settings {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-secondary);
+  border-radius: 15px;
+  box-shadow: var(--shadow-neumorphism);
+  padding: 20px;
+  max-width: 400px;
+  width: 90%;
+  z-index: 10001;
+  pointer-events: auto;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.settings-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.close-settings {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-settings:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.settings-content {
+  margin-bottom: 20px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+}
+
+.setting-item label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.setting-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent-primary);
+}
+
+.setting-item input[type="number"] {
+  width: 60px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 5px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.action-btn.primary {
+  background: var(--accent-primary);
+  color: white;
+  box-shadow: var(--shadow-neumorphism);
+}
+
+.action-btn.primary:hover {
+  background: var(--accent-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-neumorphism-hover);
+}
+
+.action-btn.secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  box-shadow: var(--shadow-neumorphism);
+}
+
+.action-btn.secondary:hover {
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-neumorphism-hover);
+}
+
+/* 알림 통계 패널 */
+.notification-stats {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-secondary);
+  border-radius: 15px;
+  box-shadow: var(--shadow-neumorphism);
+  padding: 20px;
+  max-width: 300px;
+  width: 90%;
+  z-index: 10001;
+  pointer-events: auto;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.stats-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.close-stats {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-stats:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.stats-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+}
+
+.stat-label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: var(--accent-primary);
+  font-size: 1.1rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .notification-system {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  .notification {
+    margin-bottom: 8px;
+  }
+
+  .notification-content {
+    padding: 12px;
+  }
+
+  .notification-title {
+    font-size: 0.85rem;
+  }
+
+  .notification-message {
+    font-size: 0.8rem;
+  }
+
+  .notification-time {
+    font-size: 0.65rem;
+  }
+
+  .notification-settings,
+  .notification-stats {
+    width: 95%;
+    max-width: none;
+    padding: 15px;
+  }
+
+  .settings-header h3,
+  .stats-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .setting-item {
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+
+  .setting-item label {
+    font-size: 0.85rem;
+  }
+
+  .action-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-system {
+    top: 5px;
+    right: 5px;
+    left: 5px;
+  }
+
+  .notification-content {
+    padding: 10px;
+  }
+
+  .notification-title {
+    font-size: 0.8rem;
+  }
+
+  .notification-message {
+    font-size: 0.75rem;
+  }
+
+  .notification-time {
+    font-size: 0.6rem;
+  }
+
+  .notification-settings,
+  .notification-stats {
+    padding: 12px;
+  }
+
+  .settings-header h3,
+  .stats-header h3 {
+    font-size: 1rem;
+  }
+
+  .setting-item {
+    padding: 6px;
+    margin-bottom: 8px;
+  }
+
+  .setting-item label {
+    font-size: 0.8rem;
+  }
+
+  .action-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .notification {
+    background: var(--bg-secondary-dark);
+  }
+
+  .notification-content {
+    color: var(--text-primary-dark);
+  }
+
+  .notification-title {
+    color: var(--text-primary-dark);
+  }
+
+  .notification-message {
+    color: var(--text-secondary-dark);
+  }
+
+  .notification-time {
+    color: var(--text-secondary-dark);
+  }
+
+  .notification-settings,
+  .notification-stats {
+    background: var(--bg-secondary-dark);
+  }
+
+  .settings-header h3,
+  .stats-header h3 {
+    color: var(--text-primary-dark);
+  }
+
+  .setting-item {
+    background: var(--bg-primary-dark);
+  }
+
+  .setting-item label {
+    color: var(--text-primary-dark);
+  }
+
+  .stat-label {
+    color: var(--text-primary-dark);
+  }
+}
+
+/* 애니메이션 */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.notification.slide-in {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notification.slide-out {
+  animation: slideOutRight 0.3s ease-in;
+}

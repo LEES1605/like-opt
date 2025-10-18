@@ -1,671 +1,420 @@
-/* ========================================
-   Neumorphism Design System
-   재사용 가능한 Neumorphism 컴포넌트 스타일
-   ======================================== */
+/**
+ * Neumorphism 디자인 시스템
+ * Like-Opt 프론트엔드 Neumorphism 스타일
+ */
 
-/* 기본 Neumorphism 믹스인 */
+/* 기본 Neumorphism 스타일 */
 .neumorphism {
-  background: var(--gradient-surface);
-  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-medium);
   box-shadow: var(--shadow-soft);
-  border: var(--border-width) solid var(--border-color);
-  backdrop-filter: var(--backdrop-blur-lg);
-  transition: all var(--transition-normal);
+  border: 1px solid var(--border-primary);
 }
 
 .neumorphism-inset {
-  background: var(--gradient-surface);
-  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-medium);
   box-shadow: var(--shadow-inset);
-  border: var(--border-width) solid var(--border-color);
-  backdrop-filter: var(--backdrop-blur-lg);
-  transition: all var(--transition-normal);
-}
-
-.neumorphism-elevated {
-  background: var(--gradient-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-hard);
-  border: var(--border-width) solid var(--border-color);
-  backdrop-filter: var(--backdrop-blur-xl);
-  transition: all var(--transition-normal);
+  border: 1px solid var(--border-primary);
 }
 
 .neumorphism-flat {
-  background: var(--gradient-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-flat);
-  border: var(--border-width) solid var(--border-color);
-  backdrop-filter: var(--backdrop-blur-md);
-  transition: all var(--transition-normal);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-medium);
+  border: 1px solid var(--border-primary);
 }
 
-/* 호버 효과 */
-.neumorphism:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-elevated);
-}
-
-.neumorphism-inset:hover {
+/* 버튼 Neumorphism 스타일 */
+.btn-neumorphism {
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: var(--radius-medium);
   box-shadow: var(--shadow-soft);
-}
-
-.neumorphism-elevated:hover {
-  transform: translateY(-4px);
-  box-shadow: 
-    16px 16px 32px rgba(0, 0, 0, 0.5),
-    -16px -16px 32px rgba(255, 255, 255, 0.03);
-}
-
-/* 활성 상태 */
-.neumorphism:active,
-.neumorphism.active {
-  transform: translateY(1px);
-  box-shadow: var(--shadow-inset);
-}
-
-.neumorphism-inset:active,
-.neumorphism-inset.active {
-  box-shadow: 
-    inset 6px 6px 12px rgba(0, 0, 0, 0.4),
-    inset -6px -6px 12px rgba(255, 255, 255, 0.08);
-}
-
-/* ========================================
-   Button Neumorphism Styles
-   ======================================== */
-
-.btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-normal);
-  text-decoration: none;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
+  color: var(--text-primary);
   cursor: pointer;
-  user-select: none;
-  border: var(--border-width) solid transparent;
-  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: var(--font-base);
+  font-weight: var(--font-medium);
+  padding: var(--spacing-sm) var(--spacing-lg);
   transition: all var(--transition-normal);
-  outline: none;
+  position: relative;
   overflow: hidden;
 }
 
-/* Button Sizes */
-.btn-xs {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-size: var(--font-size-xs);
-  border-radius: var(--radius-sm);
-}
-
-.btn-sm {
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: var(--font-size-sm);
-  border-radius: var(--radius-md);
-}
-
-.btn-lg {
-  padding: var(--spacing-lg) var(--spacing-xl);
-  font-size: var(--font-size-lg);
-  border-radius: var(--radius-xl);
-}
-
-.btn-xl {
-  padding: var(--spacing-xl) var(--spacing-2xl);
-  font-size: var(--font-size-xl);
-  border-radius: var(--radius-2xl);
-}
-
-/* Button Types */
-.btn-primary {
-  background: var(--gradient-primary);
-  color: var(--color-text-accent);
-  box-shadow: var(--shadow-soft);
-}
-
-.btn-primary:hover {
+.btn-neumorphism:hover {
+  box-shadow: var(--shadow-medium);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-elevated);
 }
 
-.btn-primary:active {
-  transform: translateY(1px);
+.btn-neumorphism:active {
   box-shadow: var(--shadow-inset);
+  transform: translateY(0);
 }
 
-.btn-secondary {
-  background: var(--gradient-secondary);
-  color: var(--color-text-primary);
-  box-shadow: var(--shadow-soft);
-}
-
-.btn-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-elevated);
-}
-
-.btn-secondary:active {
-  transform: translateY(1px);
-  box-shadow: var(--shadow-inset);
-}
-
-.btn-outline {
-  background: transparent;
-  color: var(--color-text-primary);
-  border: var(--border-width) solid var(--border-color);
-  box-shadow: var(--shadow-soft);
-}
-
-.btn-outline:hover {
-  background: var(--color-bg-surface);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-elevated);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--color-text-primary);
-  box-shadow: none;
-}
-
-.btn-ghost:hover {
-  background: var(--color-bg-surface);
-  box-shadow: var(--shadow-flat);
-}
-
-.btn-round {
-  border-radius: var(--radius-full);
-}
-
-.btn-block {
-  width: 100%;
-  display: flex;
-}
-
-/* Button States */
-.btn:disabled,
-.btn-disabled {
-  opacity: 0.6;
+.btn-neumorphism:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none !important;
-  box-shadow: var(--shadow-inset) !important;
+  transform: none;
+  box-shadow: var(--shadow-soft);
 }
 
-.btn-loading {
-  position: relative;
-  color: transparent;
+/* 버튼 변형 */
+.btn-neumorphism-primary {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2);
 }
 
-.btn-loading::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1rem;
-  height: 1rem;
-  margin: -0.5rem 0 0 -0.5rem;
-  border: 2px solid transparent;
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: btn-spin 1s linear infinite;
+.btn-neumorphism-primary:hover {
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
 }
 
-@keyframes btn-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.btn-neumorphism-secondary {
+  background: var(--gradient-secondary);
+  color: white;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.2);
 }
 
-/* Button Icons */
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2em;
+.btn-neumorphism-secondary:hover {
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
 }
 
-.btn-icon-loading {
-  animation: btn-spin 1s linear infinite;
+.btn-neumorphism-success {
+  background: var(--gradient-success);
+  color: white;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
 }
 
-/* ========================================
-   Modal Neumorphism Styles
-   ======================================== */
+.btn-neumorphism-success:hover {
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
 
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: var(--z-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.btn-neumorphism-warning {
+  background: var(--gradient-warning);
+  color: white;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2);
+}
+
+.btn-neumorphism-warning:hover {
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}
+
+.btn-neumorphism-error {
+  background: var(--gradient-error);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-neumorphism-error:hover {
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+/* 카드 Neumorphism 스타일 */
+.card-neumorphism {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border-primary);
+  padding: var(--spacing-lg);
+  transition: all var(--transition-normal);
+}
+
+.card-neumorphism:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-4px);
+}
+
+.card-neumorphism-inset {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-inset);
+  border: 1px solid var(--border-primary);
   padding: var(--spacing-lg);
 }
 
-.modal-backdrop {
+/* 입력 필드 Neumorphism 스타일 */
+.input-neumorphism {
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-inset);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-base);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all var(--transition-normal);
+  width: 100%;
+}
+
+.input-neumorphism:focus {
+  outline: none;
+  box-shadow: var(--shadow-inset), 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: var(--color-primary);
+}
+
+.input-neumorphism::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* 모달 Neumorphism 스타일 */
+.modal-neumorphism {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-strong);
+  border: 1px solid var(--border-primary);
+  backdrop-filter: blur(20px);
+}
+
+.modal-backdrop-neumorphism {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+/* 토글 스위치 Neumorphism 스타일 */
+.toggle-neumorphism {
+  background: var(--bg-secondary);
+  border-radius: 20px;
+  box-shadow: var(--shadow-inset);
+  border: 1px solid var(--border-primary);
+  cursor: pointer;
+  height: 24px;
+  position: relative;
+  transition: all var(--transition-normal);
+  width: 48px;
+}
+
+.toggle-neumorphism.active {
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-soft);
+}
+
+.toggle-neumorphism::before {
+  background: var(--bg-primary);
+  border-radius: 50%;
+  box-shadow: var(--shadow-soft);
+  content: '';
+  height: 20px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: all var(--transition-normal);
+  width: 20px;
+}
+
+.toggle-neumorphism.active::before {
+  left: 26px;
+  background: white;
+}
+
+/* 프로그레스 바 Neumorphism 스타일 */
+.progress-neumorphism {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-inset);
+  border: 1px solid var(--border-primary);
+  height: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-neumorphism-fill {
+  background: var(--gradient-primary);
+  border-radius: var(--radius-medium);
+  height: 100%;
+  transition: width var(--transition-normal);
+  position: relative;
+}
+
+.progress-neumorphism-fill::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  content: '';
+  height: 100%;
+  left: -100%;
   position: absolute;
   top: 0;
-  left: 0;
+  width: 100%;
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* 아바타 Neumorphism 스타일 */
+.avatar-neumorphism {
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  box-shadow: var(--shadow-soft);
+  border: 2px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar-neumorphism img {
   width: 100%;
   height: 100%;
-  background: var(--color-bg-overlay);
-  backdrop-filter: var(--backdrop-blur-md);
+  object-fit: cover;
 }
 
-.modal-dialog {
-  position: relative;
-  width: 100%;
-  max-width: 500px;
-  margin: auto;
-  background: var(--color-bg-surface);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-elevated);
-  border: var(--border-width) solid var(--border-color);
-  backdrop-filter: var(--backdrop-blur-xl);
-  animation: modal-fade-in var(--animation-duration-normal) var(--animation-easing-ease-out);
-}
-
-.modal-dialog.modal-sm {
-  max-width: 300px;
-}
-
-.modal-dialog.modal-lg {
-  max-width: 800px;
-}
-
-.modal-dialog.modal-xl {
-  max-width: 1140px;
-}
-
-.modal-dialog.modal-fullscreen {
-  max-width: 100vw;
-  max-height: 100vh;
-  margin: 0;
-  border-radius: 0;
-}
-
-.modal-content {
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-lg) var(--spacing-xl);
-  border-bottom: var(--border-width) solid var(--border-color);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  background: var(--gradient-surface);
-}
-
-.modal-title {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: var(--font-size-2xl);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  padding: var(--spacing-xs);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-  line-height: 1;
-}
-
-.modal-close:hover {
-  color: var(--color-text-primary);
-  background: var(--color-bg-surface);
-  box-shadow: var(--shadow-flat);
-}
-
-.modal-body {
-  padding: var(--spacing-xl);
-  overflow-y: auto;
-  flex: 1;
-}
-
-.modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg) var(--spacing-xl);
-  border-top: var(--border-width) solid var(--border-color);
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  background: var(--gradient-surface);
-}
-
-/* Modal Animations */
-@keyframes modal-fade-in {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* ========================================
-   Toggle Switch Neumorphism Styles
-   ======================================== */
-
-.toggle-container {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.toggle-container.toggle-label-left {
-  flex-direction: row-reverse;
-  gap: var(--spacing-md);
-}
-
-.toggle-label {
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  user-select: none;
-}
-
-.toggle-switch-container {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  user-select: none;
-}
-
-.toggle-input {
-  position: absolute;
+.avatar-neumorphism::before {
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  content: '';
+  height: 100%;
+  left: 0;
   opacity: 0;
-  width: 0;
-  height: 0;
+  position: absolute;
+  top: 0;
+  transition: opacity var(--transition-normal);
+  width: 100%;
 }
 
-.toggle-slider {
-  position: relative;
-  display: block;
-  background: var(--gradient-surface);
-  border-radius: var(--radius-full);
+.avatar-neumorphism:hover::before {
+  opacity: 0.1;
+}
+
+/* 배지 Neumorphism 스타일 */
+.badge-neumorphism {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-small);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-neumorphism-primary {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.badge-neumorphism-success {
+  background: var(--gradient-success);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.badge-neumorphism-warning {
+  background: var(--gradient-warning);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.badge-neumorphism-error {
+  background: var(--gradient-error);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* 로딩 스피너 Neumorphism 스타일 */
+.spinner-neumorphism {
+  background: var(--bg-secondary);
+  border-radius: 50%;
   box-shadow: var(--shadow-inset);
-  border: var(--border-width) solid var(--border-color);
-  transition: all var(--transition-normal);
-  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  height: 40px;
+  position: relative;
+  width: 40px;
 }
 
-.toggle-handle {
+.spinner-neumorphism::before {
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  content: '';
+  height: 20px;
+  left: 50%;
   position: absolute;
   top: 50%;
-  left: 2px;
-  transform: translateY(-50%);
-  width: calc(50% - 4px);
-  height: calc(100% - 4px);
-  background: var(--gradient-primary);
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-soft);
-  transition: all var(--transition-normal);
+  transform: translate(-50%, -50%);
+  width: 20px;
+  animation: spinnerRotate 1s linear infinite;
 }
 
-.toggle-input:checked + .toggle-slider {
-  background: var(--gradient-primary);
-  box-shadow: var(--shadow-soft);
+@keyframes spinnerRotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-.toggle-input:checked + .toggle-slider .toggle-handle {
-  left: calc(50% + 2px);
-  background: var(--color-text-accent);
-  box-shadow: var(--shadow-flat);
-}
-
-/* Toggle Sizes */
-.toggle-switch-sm .toggle-slider {
-  width: 2rem;
-  height: 1.25rem;
-}
-
-.toggle-switch-sm .toggle-handle {
-  width: calc(1.25rem - 4px);
-  height: calc(1.25rem - 4px);
-}
-
-.toggle-switch-md .toggle-slider {
-  width: 3rem;
-  height: 1.75rem;
-}
-
-.toggle-switch-md .toggle-handle {
-  width: calc(1.75rem - 4px);
-  height: calc(1.75rem - 4px);
-}
-
-.toggle-switch-lg .toggle-slider {
-  width: 4rem;
-  height: 2.25rem;
-}
-
-.toggle-switch-lg .toggle-handle {
-  width: calc(2.25rem - 4px);
-  height: calc(2.25rem - 4px);
-}
-
-/* Toggle Colors */
-.toggle-switch-success.toggle-input:checked + .toggle-slider {
-  background: var(--gradient-primary);
-}
-
-.toggle-switch-warning.toggle-input:checked + .toggle-slider {
-  background: linear-gradient(135deg, var(--color-warning), var(--color-warning-light));
-}
-
-.toggle-switch-danger.toggle-input:checked + .toggle-slider {
-  background: linear-gradient(135deg, var(--color-danger), var(--color-danger-light));
-}
-
-/* Toggle States */
-.toggle-switch-disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.toggle-switch-disabled .toggle-slider {
-  box-shadow: var(--shadow-inset);
-}
-
-/* ========================================
-   Card Neumorphism Styles
-   ======================================== */
-
-.card {
-  background: var(--color-bg-surface);
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-xl);
-  box-shadow: var(--shadow-soft);
-  border: var(--border-width) solid var(--border-color);
-  backdrop-filter: var(--backdrop-blur-lg);
-  transition: all var(--transition-normal);
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-elevated);
-}
-
-.card-header {
-  padding-bottom: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
-  border-bottom: var(--border-width) solid var(--border-color);
-}
-
-.card-title {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.card-body {
-  flex: 1;
-}
-
-.card-footer {
-  padding-top: var(--spacing-lg);
-  margin-top: var(--spacing-lg);
-  border-top: var(--border-width) solid var(--border-color);
-}
-
-/* ========================================
-   Form Elements Neumorphism Styles
-   ======================================== */
-
-.form-group {
-  margin-bottom: var(--spacing-lg);
-}
-
-.form-label {
-  display: block;
-  margin-bottom: var(--spacing-sm);
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
-}
-
-.form-input,
-.form-textarea,
-.form-select {
-  width: 100%;
-  padding: var(--spacing-md) var(--spacing-lg);
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
-  background: var(--color-bg-surface);
-  border: var(--border-width) solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-inset);
-  backdrop-filter: var(--backdrop-blur-md);
-  transition: all var(--transition-normal);
-  outline: none;
-}
-
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
-  border-color: var(--color-primary);
-  box-shadow: 
-    var(--shadow-inset),
-    0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-  color: var(--color-text-tertiary);
-}
-
-/* ========================================
-   Loading Spinner Neumorphism Styles
-   ======================================== */
-
-.spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 3px solid var(--border-color);
-  border-top: 3px solid var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-md);
-  text-align: center;
-}
-
-/* ========================================
-   Responsive Design
-   ======================================== */
-
+/* 반응형 Neumorphism */
 @media (max-width: 768px) {
-  .modal-dialog {
-    margin: var(--spacing-md);
-    max-width: calc(100vw - 2rem);
+  .card-neumorphism {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-medium);
   }
   
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    padding: var(--spacing-lg);
+  .btn-neumorphism {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-sm);
   }
   
-  .btn {
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-sm);
-  }
-  
-  .card {
-    padding: var(--spacing-lg);
+  .input-neumorphism {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-sm);
   }
 }
 
-/* ========================================
-   Accessibility Improvements
-   ======================================== */
-
-/* Focus indicators */
-.btn:focus-visible,
-.modal-close:focus-visible,
-.toggle-switch-container:focus-visible,
-.form-input:focus-visible,
-.form-textarea:focus-visible,
-.form-select:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+@media (max-width: 480px) {
+  .card-neumorphism {
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-small);
+  }
+  
+  .btn-neumorphism {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-xs);
+  }
+  
+  .toggle-neumorphism {
+    height: 20px;
+    width: 40px;
+  }
+  
+  .toggle-neumorphism::before {
+    height: 16px;
+    width: 16px;
+  }
+  
+  .toggle-neumorphism.active::before {
+    left: 22px;
+  }
 }
 
-/* Reduced motion support */
+/* 접근성 개선 */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .btn-neumorphism,
+  .card-neumorphism,
+  .input-neumorphism,
+  .toggle-neumorphism,
+  .progress-neumorphism-fill,
+  .avatar-neumorphism,
+  .spinner-neumorphism::before {
+    transition: none;
+    animation: none;
   }
 }
 
-/* High contrast mode support */
+/* 고대비 모드 */
 @media (prefers-contrast: high) {
   .neumorphism,
-  .neumorphism-inset,
-  .neumorphism-elevated,
-  .neumorphism-flat {
-    border: 2px solid currentColor;
+  .card-neumorphism,
+  .btn-neumorphism,
+  .input-neumorphism,
+  .modal-neumorphism,
+  .toggle-neumorphism,
+  .progress-neumorphism,
+  .avatar-neumorphism,
+  .badge-neumorphism,
+  .spinner-neumorphism {
+    box-shadow: none;
+    border: 2px solid var(--border-primary);
   }
 }

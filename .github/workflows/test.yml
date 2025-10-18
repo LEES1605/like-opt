@@ -1,0 +1,242 @@
+name: Like-Opt Frontend Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  # 백엔드 서버 시작
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+      
+      - name: Start backend server
+        run: |
+          cd backend
+          python run.py &
+          sleep 10
+        env:
+          FLASK_ENV: testing
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Wait for backend to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:5001/api/v1/health; then
+              echo "Backend is ready!"
+              break
+            fi
+            echo "Waiting for backend... ($i/30)"
+            sleep 2
+          done
+
+  # 프론트엔드 테스트
+  frontend-tests:
+    needs: backend
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Run linting
+        run: |
+          cd frontend
+          npm run lint
+      
+      - name: Run unit tests
+        run: |
+          cd frontend
+          npm run test:coverage
+      
+      - name: Run integration tests
+        run: |
+          cd frontend
+          npm run test -- --testPathPattern="integration"
+        env:
+          BACKEND_URL: http://localhost:5001
+      
+      - name: Install Playwright browsers
+        run: |
+          cd frontend
+          npx playwright install --with-deps
+      
+      - name: Run E2E tests
+        run: |
+          cd frontend
+          npm run test:e2e
+        env:
+          BACKEND_URL: http://localhost:5001
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-node-${{ matrix.node-version }}
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
+            frontend/coverage/
+
+  # 성능 테스트
+  performance-tests:
+    needs: backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          npx playwright install --with-deps
+      
+      - name: Run performance tests
+        run: |
+          cd frontend
+          npm run test:e2e -- --grep "performance"
+        env:
+          BACKEND_URL: http://localhost:5001
+      
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-results
+          path: frontend/test-results/
+
+  # 보안 스캔
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Run security audit
+        run: |
+          cd frontend
+          npm audit --audit-level=moderate
+      
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=frontend/package.json
+
+  # 빌드 테스트
+  build-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+      
+      - name: Test build output
+        run: |
+          cd frontend
+          ls -la dist/
+          test -f dist/index.html
+          test -f dist/main.*.js
+          test -f dist/main.*.css
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/dist/
+
+  # 테스트 결과 요약
+  test-summary:
+    needs: [frontend-tests, performance-tests, security-scan, build-test]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Test Summary
+        run: |
+          echo "## 🧪 테스트 결과 요약" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 테스트 유형 | 상태 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 프론트엔드 테스트 | ${{ needs.frontend-tests.result == 'success' && '✅ 성공' || '❌ 실패' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 성능 테스트 | ${{ needs.performance-tests.result == 'success' && '✅ 성공' || '❌ 실패' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 보안 스캔 | ${{ needs.security-scan.result == 'success' && '✅ 성공' || '❌ 실패' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 빌드 테스트 | ${{ needs.build-test.result == 'success' && '✅ 성공' || '❌ 실패' }} |" >> $GITHUB_STEP_SUMMARY

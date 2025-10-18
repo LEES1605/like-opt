@@ -6,31 +6,20 @@ module.exports = {
     jest: true
   },
   extends: [
-    'eslint:recommended',
-    'prettier'
+    'eslint:recommended'
   ],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module'
   },
-  plugins: ['prettier'],
   rules: {
-    // Prettier 통합
-    'prettier/prettier': 'error',
-    
-    // 일반적인 규칙
+    // 에러 방지
     'no-console': 'warn',
     'no-debugger': 'error',
-    'no-unused-vars': 'error',
+    'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
     'no-undef': 'error',
     
-    // 코드 품질
-    'prefer-const': 'error',
-    'no-var': 'error',
-    'object-shorthand': 'error',
-    'prefer-arrow-callback': 'error',
-    
-    // 스타일
+    // 코드 스타일
     'indent': ['error', 2],
     'quotes': ['error', 'single'],
     'semi': ['error', 'always'],
@@ -38,35 +27,39 @@ module.exports = {
     'object-curly-spacing': ['error', 'always'],
     'array-bracket-spacing': ['error', 'never'],
     
+    // 모범 사례
+    'prefer-const': 'error',
+    'no-var': 'error',
+    'no-duplicate-imports': 'error',
+    'no-useless-return': 'error',
+    'no-useless-constructor': 'error',
+    'no-useless-escape': 'error',
+    
     // 함수 관련
-    'func-names': 'error',
-    'prefer-function-declarations': 'error',
+    'func-names': ['error', 'as-needed'],
+    'prefer-arrow-callback': 'error',
+    'arrow-spacing': 'error',
+    
+    // 객체 관련
+    'object-shorthand': 'error',
+    'prefer-template': 'error',
+    
+    // 비동기 관련
+    'no-async-promise-executor': 'error',
+    'prefer-promise-reject-errors': 'error',
     
     // 클래스 관련
     'class-methods-use-this': 'off',
-    
-    // import/export
-    'no-duplicate-imports': 'error',
-    
-    // 보안
-    'no-eval': 'error',
-    'no-implied-eval': 'error',
-    'no-new-func': 'error'
+    'no-empty-function': 'off'
   },
   globals: {
     // 브라우저 전역 변수
     'window': 'readonly',
     'document': 'readonly',
     'navigator': 'readonly',
-    'console': 'readonly',
+    'fetch': 'readonly',
     'localStorage': 'readonly',
     'sessionStorage': 'readonly',
-    'fetch': 'readonly',
-    'URL': 'readonly',
-    'URLSearchParams': 'readonly',
-    'FormData': 'readonly',
-    'Blob': 'readonly',
-    'File': 'readonly',
     
     // 테스트 전역 변수
     'describe': 'readonly',
