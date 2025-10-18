@@ -1184,8 +1184,7 @@ def get_index_info():
         # 3. AI 시스템 정보 수집
         try:
             from ..services.session_adapter import session_adapter
-            # from src.backend.infrastructure.ai_client import get_current_provider
-            def get_current_provider(): return "openai"
+            from ..services.ai_service import get_current_provider
             
             # RAG 모듈 로드 상태 (실제 인덱스 존재 여부로 판단)
             ai_environment['ai_system']['rag_module_loaded'] = summary.total_chunks > 0
@@ -2059,8 +2058,7 @@ def set_ai_provider():
             }), 400
         
         # AI 클라이언트에서 제공자 변경
-        # from src.backend.infrastructure.ai_client import set_provider
-        def set_provider(): return None
+        from ..services.ai_service import set_provider
         set_provider(provider)
         
         print(f"[ADMIN] AI 제공자 변경: {provider}")
@@ -2381,8 +2379,8 @@ def get_search_mode():
     """
     try:
         from ..services.session_adapter import session_adapter
-        # from src.backend.services.rag_service import rag_service
-        class rag_service: pass
+        from ..services.rag_service import RAGService
+        rag_service = RAGService()
         import os
         
         # 현재 설정
@@ -2514,8 +2512,8 @@ def test_search():
             return jsonify({'success': False, 'message': '관리자 권한이 필요합니다.'}), 401
         
         import time
-        # from src.backend.services.rag_service import rag_service
-        class rag_service: pass
+        from ..services.rag_service import RAGService
+        rag_service = RAGService()
         
         data = request.get_json() or {}
         query = data.get('query', '')
